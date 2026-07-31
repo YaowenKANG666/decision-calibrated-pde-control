@@ -28,3 +28,4 @@ paper_rewriting_output/final_paper/*.out
 !data/.gitkeep
 !checkpoints/.gitkeep
 !results/.gitkeep
+!results/three_seed_summary.json
