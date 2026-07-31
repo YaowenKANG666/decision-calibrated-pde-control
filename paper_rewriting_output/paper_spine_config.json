@@ -1,0 +1,21 @@
+{
+  "workflow": "build_from_materials",
+  "scene": "conference",
+  "tier": "flash",
+  "output_language": "en",
+  "target_name": "research preprint",
+  "materials_dir": ".",
+  "draft_path": "",
+  "user_motivation": "How can predictive uncertainty be converted into dynamics ambiguity sets that are effective for control decisions?",
+  "official_urls": [],
+  "special_requirements": [
+    "FNO is only the initial world model, not the contribution",
+    "Separate predictive coverage from closed-loop control quality",
+    "State all assumptions and negative results honestly"
+  ],
+  "word_output": "none",
+  "translation_package": "none",
+  "reference_mode": "local_first",
+  "reference_paths": [".", "/Users/kangyaowen/Desktop/myproject"],
+  "citation_target_count": 20
+}

@@ -1,0 +1,385 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.82in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,tabularx,microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+\newcommand{\R}{\mathbb R}
+\newcommand{\E}{\mathbb E}
+\newcommand{\U}{\mathcal U}
+\newcommand{\G}{\mathcal G}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle_n}
+\newcommand{\normn}[1]{\left\lVert #1\right\rVert_{2,n}}
+
+\title{\vspace{-1.5em}\textbf{From Predictive Uncertainty to
+Decision-Effective Dynamics Ambiguity Sets}\\
+\large Robust Control of Function-Valued Systems under Deployment Shift}
+\author{Yaowen Kang\\
+\small Department of Mathematics, Imperial College London}
+\date{Preprint draft, \today}
+
+\begin{document}
+\raggedbottom
+\maketitle
+
+\begin{abstract}
+Learned dynamics can be calibrated in a predictive norm yet still induce poor
+control when errors align with sensitive cost-to-go directions. We ask how
+predictive uncertainty can become a decision-effective dynamics ambiguity set.
+A function-valued world model outputs a mean and pointwise scale; a small
+deployment audit conformalizes the resulting anisotropic ellipsoid. Projected
+gradient ascent over this set gives a nonlinear adversarial controller, while
+its closed-form support in the finite-horizon adjoint direction gives a fast
+first-order approximation. We establish marginal one-step coverage, derive the
+exact support and linearization remainder, and state rollout and discounted
+value-error bounds under Lipschitz assumptions. Controlled viscous Burgers
+dynamics test viscosity, boundary, and latent actuator-gain shifts. In a
+preliminary three-seed paired gain sweep, adversarial MPC reduced empirical
+90th-percentile cost in every seed by \(1.57\%\)--\(3.68\%\); the mean relative
+change in average cost across seeds was \(+0.05\%\).
+\end{abstract}
+
+\section{Introduction}
+
+Fast learned surrogates make repeated planning for distributed-parameter
+systems increasingly plausible. Neural operators, for example, learn
+function-to-function maps and can replace expensive numerical time steppers in
+model predictive control (MPC) \cite{li2021fno}. Their deployment creates a
+separate difficulty: a controller optimizes against a learned model and can
+therefore exploit precisely those errors that appear harmless under an average
+prediction metric.
+
+Uncertainty quantification does not resolve this problem by itself. Calibration
+is a statement about an event and a score; it does not state that the covered
+directions matter for a decision. This distinction is particularly sharp for a
+function-valued state. A large error far from a controlled region can have
+little effect on the objective, whereas a smaller error aligned with a
+cost-to-go gradient can reverse the preferred action. Related work has shown
+that calibrated uncertainty improves model-based planning
+\cite{malik2019calibrated}, that model losses can be made value-aware
+\cite{farahmand2017value}, and that uncertainty estimates for PDE surrogates
+can degrade under moderate distribution shift \cite{mouli2024uq}. These facts
+motivate a narrower question:
+
+\begin{quote}
+\emph{How can predictive uncertainty be converted into a dynamics ambiguity
+set that is effective for control decisions?}
+\end{quote}
+
+Conformal regions have already been combined with controller robustification
+\cite{chee2024conformal}, robust optimization
+\cite{johnstone2021conformal}, ensemble-based OOD adaptation
+\cite{contreras2025soda}, and OOD system-level synthesis
+\cite{srinivasan2026ood}. We therefore do not claim that conformal robust
+control is new. Our target is the geometry connecting a calibrated
+function-space dynamics set to the downstream finite-horizon objective.
+
+The proposed construction begins with a heteroscedastic predictive ellipsoid,
+calibrated on a small deployment audit. Robust MPC then solves an approximate
+inner maximization over a rectangular product of these one-step sets.
+Automatic differentiation also computes the adjoint of the remaining nominal
+cost, giving a closed-form first-order alternative. This separates three
+effects that are often conflated: using deployment data, obtaining predictive
+coverage, and improving the resulting decision.
+
+Our intended contributions are:
+\begin{enumerate}
+\item an audit-calibrated, anisotropic dynamics ambiguity set for
+function-valued transitions;
+\item a nonlinear adversarial-rollout controller and an exact adjoint support
+formula for its first-order approximation;
+\item a transparent hierarchy of finite-sample, deterministic, and
+first-order theoretical statements; and
+\item an evaluation protocol that requires closed-loop benefit beyond
+coverage, using matched in-distribution, audit-L2, and adjoint-support
+baselines.
+\end{enumerate}
+The initial implementation uses a residual Fourier neural operator (FNO) as a
+world model. The paper is not an FNO architecture contribution.
+
+\section{Problem formulation}
+\par\noindent
+Let \(x_t\in\R^n\) be a discretized function and \(a_t\in\mathcal A\) a control.
+The unknown deployment dynamics are
+\[
+x_{t+1}=G_\star(x_t,a_t;\xi),
+\]
+where \(\xi\) includes physical parameters, boundary conditions, and latent
+actuator properties. A learned model is trained on a source distribution, then
+used to minimize the finite-horizon cost
+\[
+J_H(x_0,a_{0:H-1})
+=\sum_{t=1}^{H}\ell(x_t)+\sum_{t=0}^{H-1}r(a_t).
+\]
+At deployment, we assume access to a small independent audit sample
+\(\mathcal D_{\rm aud}=\{(x_i,a_i,y_i)\}_{i=1}^m\), drawn from the deployment
+regime but not used to update the mean dynamics model.
+
+We call an ambiguity set \emph{decision-effective} if, at a matched audit
+budget and nominal model, incorporating it into the controller improves a
+predeclared downstream metric: paired mean closed-loop cost, upper-tail cost,
+or constraint violation. Predictive coverage is necessary evidence, but is not
+the definition.
+
+\section{From predictive uncertainty to a dynamics ambiguity set}
+
+\subsection{Function-valued mean and scale}
+
+The world model outputs
+\[
+\widehat G_\theta(x,a)=\mu_\theta(x,a),\qquad
+\sigma_\theta(x,a)\in\R_{>0}^n.
+\]
+Our prototype uses residual operator blocks and predicts
+\(\mu_\theta(x,a)=x+\delta_\theta(x,a)\). The scale head is trained by a
+pointwise quantile loss on detached absolute residuals, preventing the mean
+model from increasing its error merely to simplify uncertainty fitting.
+
+\subsection{Deployment-audit conformalization}
+
+Write
+\(\normn{v}^2=n^{-1}\sum_{j=1}^n v_j^2\). Define the audit score
+\[
+S_i=\normn{\frac{y_i-\mu_\theta(x_i,a_i)}
+{\sigma_\theta(x_i,a_i)}}.
+\]
+For target miscoverage \(\alpha\), let \(q\) be the empirical order statistic
+with rank \(\lceil(m+1)(1-\alpha)\rceil\), clipped at \(m\). The ambiguity set is
+\begin{equation}
+\U_\theta(x,a)=
+\left\{
+\mu_\theta(x,a)+\sigma_\theta(x,a)\odot z:
+\normn{z}\le q
+\right\}.
+\label{eq:set}
+\end{equation}
+
+\begin{proposition}[Marginal one-step coverage]
+Conditional on the trained model, if the audit examples and a new deployment
+example are exchangeable, then
+\[
+\Pr\{G_\star(x,a)\in\U_\theta(x,a)\}\ge 1-\alpha.
+\]
+\end{proposition}
+\begin{proof}
+The \(m\) audit scores and the new score are exchangeable. The rank of the new
+score is therefore uniform up to ties; the conformal order statistic gives the
+stated lower bound.
+\end{proof}
+
+\section{Decision-effective robust MPC}
+
+\subsection{Nonlinear adversarial rollout}
+
+For a candidate action sequence, the rectangular robust planning problem is
+\begin{equation}
+\min_{a_{0:H-1}}\;
+\max_{\normn{z_t}\le q}
+\sum_{t=1}^{H}\ell(x_t)+\sum_{t=0}^{H-1}r(a_t),
+\quad
+x_{t+1}=\mu_\theta(x_t,a_t)+\sigma_\theta(x_t,a_t)\odot z_t.
+\label{eq:minmax}
+\end{equation}
+The prototype uses projected gradient ascent for \(z_{0:H-1}\) and the
+cross-entropy method for the outer action sequence. This computes an
+approximate saddle point; finite PGD iterations are not an optimality
+certificate. The rectangular product is a robust planning choice. Marginal
+one-step conformal coverage does not imply simultaneous coverage of every set
+along a trajectory.
+
+\subsection{Fast adjoint approximation}
+
+Use \(\ip{v}{w}=n^{-1}\sum_jv_jw_j\). For a candidate nominal rollout, let
+\[
+\lambda_{t+1}=\nabla_{x_{t+1}}\widehat J_H
+\]
+be the full finite-horizon adjoint, including the dependence of later predicted
+states on \(x_{t+1}\).
+
+\begin{proposition}[Exact ellipsoid support]
+For every \(\lambda\in\R^n\),
+\begin{equation}
+\sup_{\Delta:\normn{\Delta/\sigma}\le q}
+\ip{\lambda}{\Delta}
+=q\normn{\lambda\odot\sigma}.
+\label{eq:support}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Set \(\Delta=\sigma\odot z\). Cauchy--Schwarz gives
+\(\ip{\lambda\odot\sigma}{z}\le
+\normn{\lambda\odot\sigma}\normn z\).
+Equality is attained by choosing \(z\) parallel to
+\(\lambda\odot\sigma\).
+\end{proof}
+
+Linearizing the inner problem in \cref{eq:minmax} gives
+\begin{equation}
+\widehat J_H(a_{0:H-1})
++\sum_{t=0}^{H-1}q
+\normn{\lambda_{t+1}\odot
+\sigma_\theta(\widehat x_t,a_t)}.
+\label{eq:robust-mpc}
+\end{equation}
+This adjoint-support controller is retained as a computationally cheap
+approximation and ablation. The nonlinear adversarial rollout is the primary
+robust controller.
+
+\subsection{Linearization remainder}
+
+\begin{proposition}[Conditional curvature bound]
+Suppose the Hessian of the remaining horizon cost with respect to
+\(x_{t+1}\) has operator norm at most \(M_H\) throughout \(\U_\theta\).
+Then
+\[
+\sup_{\Delta\in\U_\theta}
+J_H(\widehat x+\Delta)
+\le J_H(\widehat x)
++q\normn{\lambda\odot\sigma}
++\frac{M_H}{2}q^2\|\sigma\|_\infty^2.
+\]
+\end{proposition}
+The adjoint controller uses the first-order terms in \cref{eq:robust-mpc}; the
+adversarial controller instead optimizes the nonlinear rollout numerically.
+Neither is trajectory-certified: the former omits a certified curvature
+buffer, while the latter uses a finite-step nonconvex inner solver.
+
+\section{Rollout and value-error bounds}
+
+\begin{assumption}
+On a forward-invariant set, \(G_\star\) is \(L_G\)-Lipschitz in state and
+\(\normn{G_\star(x,a)-\widehat G_\theta(x,a)}\le\epsilon\) uniformly.
+\end{assumption}
+
+For a common open-loop action sequence and \(e_t=\normn{x_t-\widehat x_t}\),
+\[
+e_{t+1}\le L_Ge_t+\epsilon,\qquad
+e_h\le\epsilon\sum_{j=0}^{h-1}L_G^j.
+\]
+If the stage reward is \(L_r\)-Lipschitz and \(\gamma L_G<1\), then
+\[
+|V_{G_\star}-V_{\widehat G}|
+\le\frac{\gamma L_r\epsilon}
+{(1-\gamma)(1-\gamma L_G)}.
+\]
+If every policy in the comparison class induces true and learned closed-loop
+maps sharing the same Lipschitz bound, a two-model optimality decomposition
+gives
+\[
+V_{G_\star}^{\pi^\star}-V_{G_\star}^{\widehat\pi}
+\le\frac{2\gamma L_r\epsilon}
+{(1-\gamma)(1-\gamma L_G)}.
+\]
+For \(L_G\le1\), this has the desired
+\(O(\epsilon/(1-\gamma)^2)\) dependence. These are deterministic uniform-error
+bounds; marginal conformal coverage alone does not imply their assumptions.
+Related Lipschitz model-based bounds are developed in
+\cite{asadi2018lipschitz}.
+
+\section{Experimental design}
+
+\paragraph{System.}
+We use the controlled viscous Burgers equation
+\[
+u_t+uu_x=\nu u_{xx}+g_{\rm act}a_tb(x),
+\]
+with nonhomogeneous Dirichlet boundaries. Training and deployment differ in
+viscosity, boundary values, initial-condition amplitude, and the latent
+actuator gain \(g_{\rm act}\). The controller observes the state and boundary
+condition but not \(g_{\rm act}\).
+
+\paragraph{Baselines.}
+All methods share one trained residual FNO:
+(i) uncontrolled, (ii) nominal MPC, (iii) an L2 tube calibrated on source
+data, (iv) an L2 tube calibrated on the same deployment audit,
+(v) the audit-calibrated ellipsoid with adjoint support, and
+(vi) the same ellipsoid with adversarial nonlinear rollouts. The comparison
+between (iv)--(vi) isolates ambiguity geometry and inner-solver effects from
+access to deployment data.
+
+\paragraph{Metrics.}
+We report one-step set coverage, radius--error association, mean and median
+closed-loop cost, 90th-percentile and worst-case cost, paired seed-level
+differences, and action magnitude. A positive result requires that the proposed
+method improve at least a predeclared tail-risk metric without a material
+increase in mean cost. Model RMSE alone cannot establish the claim.
+
+\subsection{Preliminary diagnostic: why coverage is insufficient}
+
+Before introducing the conformal ellipsoid in \cref{eq:set}, we tested scalar
+L2 and fixed spatially weighted radii on three shifted rollouts. Deployment
+audit calibration increased combined-shift one-step coverage from \(0.611\) to
+\(0.822\)--\(0.856\), but no robust controller improved on the uncontrolled
+cost. This small smoke test is not a final comparison. It serves as a
+falsifying diagnostic: restoring predictive coverage did not by itself produce
+a useful decision. Quantitative claims remain preliminary until the paired
+study includes substantially more initial states.
+
+\subsection{Preliminary paired gain sweep}
+
+We next fixed the initial field, viscosity, and boundary conditions within
+each seed and evaluated all controllers at latent actuator gains
+\(\{-0.5,0,0.5,1,1.5\}\). This removes the confounding between shift severity
+and initial-condition difficulty. \Cref{tab:preliminary} reports three initial
+seeds. The audit contains 90 independent deployment transitions.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Preliminary paired-factorial evidence. Changes are relative to nominal
+MPC within each seed. Empirical \(p90\) uses only five gain levels.}
+\label{tab:preliminary}
+\begin{tabular}{c@{\quad}cc@{\quad}cc}
+\toprule
+Seed & ID coverage & Audit coverage & Mean change & \(p90\) change\\
+\midrule
+0 & 0.283 & 0.922 & \(+0.41\%\) & \(-3.68\%\)\\
+1 & 0.206 & 0.950 & \(-0.41\%\) & \(-1.59\%\)\\
+2 & 0.222 & 0.878 & \(+0.15\%\) & \(-1.57\%\)\\
+\midrule
+Mean relative change & -- & -- & \(+0.05\%\) & \(-2.28\%\)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The adversarial controller improves the empirical upper-tail metric in all
+three seeds with negligible average change in mean cost. On the same
+calculation, the audit-calibrated L2 tube improves \(p90\) by \(1.74\%\).
+This supports the mechanism but not a population claim: each seed contains
+only five paired gains, and the nonlinear inner maximization is approximate.
+
+\section{Limitations and planned stress tests}
+
+Split conformal validity requires exchangeability between the audit and target
+deployment examples. The guarantee is marginal and one-step; it is not a
+simultaneous trajectory guarantee. The robust objective is first order unless
+the curvature buffer is certified. The pointwise scale can be misspecified; a
+deep FNO ensemble is therefore a required uncertainty baseline
+\cite{mouli2024uq}. Finally, one-dimensional Burgers control is a mechanism
+test, not evidence of broad PDE-control safety. Planned stress tests include
+audit-size sweeps, shift-severity sweeps, adversarial actuator degradation,
+paired random seeds, and a second advection--diffusion system.
+
+\section{Conclusion}
+
+Predictive uncertainty becomes useful for control only after its geometry is
+connected to the downstream objective and verified in closed loop. The proposed
+route is deliberately simple: conformalize one anisotropic dynamics ellipsoid,
+then optimize control against adverse transitions in that same set. The
+adjoint support provides a fast, interpretable approximation; projected
+adversarial rollout retains the nonlinear cost. Whether either conversion
+improves decisions is an empirical question, and the evaluation is designed to
+reject the method when it improves coverage but not control.
+
+\begingroup
+\footnotesize
+\setlength{\bibsep}{2pt}
+\bibliographystyle{plain}
+\bibliography{references}
+\endgroup
+\end{document}

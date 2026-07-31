@@ -1,0 +1,16 @@
+# Writing rationale matrix
+
+| Row ID | Manuscript Unit | Current/Planned Function | Motivation Link | Reference/SOTA Pattern Learned | Target Scene or Venue Norm | User Evidence or Citation Anchor | Planned Change | Final Text Check |
+|---|---|---|---|---|---|---|---|---|
+| R0 | Whole-paper spine | Prediction calibration is insufficient; construct and falsify a decision-calibrated ambiguity set | Exact confirmed question | Conformal robust MPC connects sets to controllers; value-aware learning identifies relevant error | Methods preprint needs one narrow claim and matched baselines | E1–E7, C01–C10 | Keep FNO subordinate; organize theory and experiments around uncertainty geometry | Every section must answer prediction-to-decision conversion |
+| R1 | Abstract opening | Establish the mismatch, not a generic PDE-ML motivation | Defines why “effective” matters | C07 and C10 | 150–200 word abstract | E3 | Lead with failed implication from coverage to control | No architecture novelty language |
+| R2 | Introduction gap | Distinguish from conformal robust MPC and OOD SLS | Narrows novelty | C01–C06 | Related work must concede closest precedents | SOTA gap map | State function-space adjoint support as the gap | No “first” claim |
+| R3 | Problem definition | Define deployment audit and decision quality | Makes question measurable | C02, C03 | Formal setting before method | simulator and regimes | Define paired closed-loop evaluation | All distributions and budgets named |
+| R4 | Predictive model | Provide mean and scale only | Supplies uncertainty input | C09, C20 | Reproducible methods detail | `models.py`, `train.py` | FNO in one subsection | No claim FNO is optimal |
+| R5 | Adjoint score | Calibrate projected error | Core conversion mechanism | C06, C07, C16 | Equation plus intuition | `calibration.py` | Introduce score and conformal quantile | Units numerator/denominator match |
+| R6 | Ambiguity set | Define diagonal ellipsoid and support | Turns score into robust object | C05 | State set before optimizer | E4 | Prove support formula | Numerical unit test agrees |
+| R7 | Robust MPC | Add support along finite-horizon adjoint | Tests decision effectiveness | C01, C08, C12 | Algorithm must expose approximations | `mpc.py` | Separate L2 tube and adjoint robust counterpart | No safety guarantee implied |
+| R8 | Theory | Separate exact, conditional, and heuristic statements | Prevents inflated closure | C08, C18 | Assumptions precede theorem | E4–E6 | Add Taylor remainder condition | Each theorem labels norm and probability |
+| R9 | Experiment design | Isolate audit versus geometry effects | Makes causal comparison | C02, C03, C09 | Matched-data ablations | four controller baselines | ID-L2 vs audit-L2 vs audit-adjoint | Same model and audit count |
+| R10 | Results | Report coverage and control separately | Direct falsification | C10 | Multi-seed intervals and tail metrics | JSON outputs | Do not elevate smoke tests | Positive claim requires paired seeds |
+| R11 | Limitations | Explain exchangeability and first order | Defines real boundary | C04, C17 | Explicit limitations | claim register | List failure modes and remedies | No hidden empirical Lipschitz guarantee |

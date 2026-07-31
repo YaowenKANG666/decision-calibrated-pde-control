@@ -1,0 +1,217 @@
+# Calibration, robust support, error propagation, and control performance
+
+This note states the current theoretical closure. It separates exact
+finite-sample and convex-analytic statements, conditional deterministic
+bounds, and planning approximations.
+
+## Proposition 1: finite-sample dynamics-set coverage
+
+Let a trained dynamics model output a mean and a positive pointwise scale,
+\(\widehat G_\theta(x,a)\) and \(\sigma_\theta(x,a)\). For an independent
+deployment-audit sample \(Z_i=(x_i,a_i,y_i)\), define
+
+\[
+S_i=
+\left\|
+\frac{y_i-\widehat G_\theta(x_i,a_i)}
+{\sigma_\theta(x_i,a_i)}
+\right\|_{2,n},
+\qquad
+\|v\|_{2,n}^2=\frac1n\sum_{j=1}^n v_j^2.
+\]
+
+For \(m\) audit points, take the order statistic with rank
+\(k=\lceil(m+1)(1-\alpha)\rceil\), clipped at \(m\), and call it \(q\).
+If the audit points and a new deployment point are exchangeable conditional
+on the trained model, the standard split-conformal rank argument gives
+
+\[
+\Pr\left\{
+G(x,a)\in\mathcal U_\theta(x,a)
+\right\}\ge 1-\alpha,
+\]
+
+where
+
+\[
+\mathcal U_\theta(x,a)=
+\left\{
+\widehat G_\theta(x,a)+\sigma_\theta(x,a)\odot z:
+\|z\|_{2,n}\le q
+\right\}.
+\]
+
+This is marginal one-step coverage on the audited deployment distribution. It
+does not imply coverage under an arbitrary further shift.
+
+## Proposition 2: exact decision support of the ambiguity set
+
+Use the normalized inner product
+\(\langle v,w\rangle_n=n^{-1}\sum_jv_jw_j\). For any cost-to-go sensitivity
+\(\lambda\),
+
+\[
+\sup_{\Delta:\|\Delta/\sigma\|_{2,n}\le q}
+\langle\lambda,\Delta\rangle_n
+=q\|\lambda\odot\sigma\|_{2,n}.
+\]
+
+To prove this, substitute \(\Delta=\sigma\odot z\) and apply Cauchy--Schwarz.
+Equality is attained by
+
+\[
+z^\star
+=q\frac{\lambda\odot\sigma}
+{\|\lambda\odot\sigma\|_{2,n}}.
+\]
+
+Thus a predictive, anisotropic dynamics ellipsoid becomes decision-effective
+by querying its support in the finite-horizon adjoint direction. No
+direction-specific recalibration is required, so the conformal set and the
+MPC support use the same \(q\).
+
+The nonlinear controller instead uses the rectangular product of these sets:
+
+\[
+\min_{a_{0:H-1}}\max_{\|z_t\|_{2,n}\le q}
+\sum_{t=1}^{H}\ell(x_t)+\sum_{t=0}^{H-1}r(a_t),
+\quad
+x_{t+1}=\widehat G_\theta(x_t,a_t)
++\sigma_\theta(x_t,a_t)\odot z_t.
+\]
+
+Projected gradient ascent gives a computable lower bound on the inner maximum,
+not a certificate that the global maximum was found. Also, marginal one-step
+conformal coverage does not imply that all \(H\) rectangular sets contain the
+true transitions simultaneously.
+
+## Proposition 3: first-order robust objective and its remainder
+
+Let \(J_H(x^+)\) denote the remaining nominal horizon cost after a predicted
+next state, and let \(\lambda=\nabla J_H(\widehat x^+)\). The linearized
+worst-case cost over the calibrated set is exactly
+
+\[
+J_H(\widehat x^+)
++q\|\lambda\odot\sigma_\theta(x,a)\|_{2,n}.
+\]
+
+If \(J_H\) is twice differentiable and its Hessian has operator norm at most
+\(M_H\) in the normalized Euclidean geometry on the ambiguity set, Taylor's
+theorem yields the conditional upper bound
+
+\[
+\sup_{\Delta\in\mathcal U_\theta}
+J_H(\widehat x^++\Delta)
+\le
+J_H(\widehat x^+)
++q\|\lambda\odot\sigma\|_{2,n}
++\frac{M_H}{2}q^2\|\sigma\|_\infty^2.
+\]
+
+The current controller implements the first two terms. It is therefore an
+exact robust counterpart for the linearized cost, and a first-order
+approximation for the nonlinear cost. A certified nonlinear claim requires
+estimating or bounding \(M_H\) and adding the third term.
+
+## Setting
+
+Let the controlled dynamics and learned world model be
+
+\[
+u_{t+1}=G(u_t,a_t), \qquad
+\widehat u_{t+1}=\widehat G(\widehat u_t,a_t).
+\]
+
+Assume on a forward-invariant set:
+
+1. the true transition is \(L_G\)-Lipschitz in state;
+2. the calibrated one-step operator error is uniformly bounded:
+   \(\|G(u,a)-\widehat G(u,a)\|\leq\epsilon\);
+3. the same open-loop action sequence is applied to both systems.
+
+## Proposition 4: multi-step rollout error
+
+Writing \(e_t=\|u_t-\widehat u_t\|\), the triangle inequality gives
+
+\[
+e_{t+1}
+\leq
+\|G(u_t,a_t)-G(\widehat u_t,a_t)\|
++
+\|G(\widehat u_t,a_t)-\widehat G(\widehat u_t,a_t)\|
+\leq L_Ge_t+\epsilon.
+\]
+
+Therefore
+
+\[
+e_h
+\leq
+\epsilon\sum_{j=0}^{h-1}L_G^j
+=
+\begin{cases}
+\epsilon(1-L_G^h)/(1-L_G),&L_G\neq1,\\
+h\epsilon,&L_G=1.
+\end{cases}
+\]
+
+This recursion motivates the robust MPC uncertainty tube
+
+\[
+R_{t+1}=L R_t+\rho(\widehat u_t,a_t).
+\]
+
+## Proposition 5: discounted value error
+
+Suppose the stage reward is \(L_r\)-Lipschitz in state and
+\(\gamma L_G<1\). For any fixed open-loop action sequence,
+
+\[
+|V_G-V_{\widehat G}|
+\leq
+L_r\sum_{t\geq0}\gamma^t e_t
+\leq
+\frac{\gamma L_r\epsilon}
+{(1-\gamma)(1-\gamma L_G)}.
+\]
+
+For a feedback-policy class, assume every true and learned closed-loop map
+\(x\mapsto G(x,\pi(x))\) and
+\(x\mapsto\widehat G(x,\pi(x))\) is \(L_G\)-Lipschitz and the one-step model
+error bound holds uniformly over the visited state-action set. Then the
+fixed-policy bound is uniform over that class. The standard two-model
+optimality decomposition gives
+
+\[
+V_G^{\pi^\star}-V_G^{\widehat\pi}
+\leq
+\frac{2\gamma L_r\epsilon}
+{(1-\gamma)(1-\gamma L_G)}.
+\]
+
+In the non-expansive case \(L_G\leq1\),
+
+\[
+V_G^{\pi^\star}-V_G^{\widehat\pi}
+\leq
+\frac{2\gamma L_r}{(1-\gamma)^2}\epsilon,
+\]
+
+which has the requested \(O(\epsilon/(1-\gamma)^2)\) form.
+
+## Important limitations
+
+- Split conformal calibration provides marginal, not uniform, one-step
+  coverage. Turning it into a trajectory-level guarantee requires simultaneous
+  calibration, a union bound, or sequential confidence methods.
+- The empirical 95th-percentile local Lipschitz estimate used by the code is a
+  planning heuristic, not a certified global Lipschitz bound.
+- The adjoint robust term is exact for the linearized cost. Nonlinear
+  certification requires the curvature term in Proposition 3.
+- Feedback policies require the stated common closed-loop Lipschitz condition;
+  otherwise an additional policy-Lipschitz term appears.
+- The theorem must specify the norm and invariant state-action set.
+
+These limitations are part of the research agenda rather than hidden
+assumptions.
