@@ -61,8 +61,7 @@ model; TNO, DSC-DNO, and MoE are deferred architecture-independence checks.
 - controlled 1D viscous Burgers equation;
 - non-homogeneous Dirichlet boundary inputs;
 - viscosity, boundary, and combined deployment shifts;
-- architecture-agnostic learned dynamics, instantiated by FNO, doubled-grid
-  finite-section TNO, DSC-DNO, and a mixture of operator experts;
+- a residual FNO world model for the current paper experiments;
 - perturbation-disagreement scale plus a learned-head baseline;
 - max-type simultaneous spatial conformal boxes;
 - a separate max-over-time-and-coordinate trajectory band;
@@ -78,8 +77,6 @@ The quick experiment is CPU-compatible:
 ```bash
 python -m pip install -e ".[dev]"
 dcurc-experiment --model fno --quick --output-dir results
-dcurc-experiment --model tno --quick --output-dir results
-dcurc-experiment --model dscdno --quick --output-dir results
 ```
 
 Use `--uncertainty head` for the learned-scale baseline; perturbation
@@ -103,8 +100,6 @@ For the intended experiment:
 
 ```bash
 dcurc-experiment --model fno --output-dir results
-dcurc-experiment --model tno --output-dir results
-dcurc-experiment --model moe --output-dir results
 ```
 
 Each run trains a one-step world model and its chosen uncertainty mechanism,
@@ -120,7 +115,11 @@ counterfactual MPC trajectories.
 three-seed paired actuator-gain sweep. It is explicitly labeled mechanism
 evidence rather than a final statistical claim.
 
-## Architecture ablations, not the main contribution
+## Deferred architecture ablations
+
+The current manuscript reports FNO only. The following backbones remain in the
+code as future architecture-independence checks and are not part of the present
+evidence:
 
 `fno`
 : Standard periodic Fourier spectral convolution plus local residual maps.
@@ -204,11 +203,15 @@ The current paper-like report is
 
 ## Scientific status
 
-This is a research prototype. Split conformal prediction provides marginal
-one-step coverage; the empirical Lipschitz tube is not yet a certified
-trajectory-level guarantee. The repository states these limitations explicitly
-and will test whether calibrated uncertainty improves decisions rather than
-reporting calibration alone.
+This is a research prototype. One-step split conformal prediction gives a
+marginal transition statement. A separately calibrated max-over-time-and-space
+score gives a simultaneous statement only for exchangeable behavior-policy
+rollouts; neither result certifies counterfactual MPC actions. The deterministic
+rollout/value theorem instead assumes a uniform one-step error on a
+forward-invariant region. Marginal conformal coverage does not imply that
+assumption. The repository keeps these claims separate and tests whether
+calibrated uncertainty improves decisions rather than reporting calibration
+alone.
 
 ## License
 

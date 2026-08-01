@@ -58,7 +58,15 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
             )
         )
 
-    axis.text(0.5, 0.92, "From predictive uncertainty to a control-effective dynamics ambiguity set", ha="center", va="center", fontsize=9.2, fontweight="bold")
+    axis.text(
+        0.5,
+        0.92,
+        "From predictive uncertainty to a decision-effective dynamics ambiguity set",
+        ha="center",
+        va="center",
+        fontsize=9.2,
+        fontweight="bold",
+    )
     axis.text(0.50, 0.16, "Finite-sample statement: marginal one-transition coverage under exchangeability", ha="center", va="center", color="#9A5A22", fontsize=6.6)
     axis.text(0.50, 0.07, "Empirical statement: control benefit must be established independently; coverage alone is insufficient", ha="center", va="center", color="#4A6650", fontsize=6.6)
 

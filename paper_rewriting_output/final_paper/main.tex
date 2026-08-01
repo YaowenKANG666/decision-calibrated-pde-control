@@ -105,6 +105,16 @@ baselines.
 The initial implementation uses a residual Fourier neural operator (FNO) as a
 world model. The paper is not an FNO architecture contribution.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../../figures/method_01_chain_schematic.pdf}
+\caption{Method and claim hierarchy. A proper-training disagreement field is
+conformalized on a disjoint deployment audit, queried in decision-sensitive
+directions, and evaluated for coverage, tightness, and closed-loop cost on
+independent data. Coverage and control benefit are separate statements.}
+\label{fig:method-chain}
+\end{figure}
+
 \section{Problem formulation}
 \par\noindent
 Let \(x_t\in\R^n\) be a discretized function and \(a_t\in\mathcal A\) a control.
@@ -353,6 +363,16 @@ bounds; marginal conformal coverage alone does not imply their assumptions.
 Related Lipschitz model-based bounds are developed in
 \cite{asadi2018lipschitz}.
 
+\paragraph{Logical separation.}
+The two conformal propositions above are finite-sample distributional
+statements for a random transition or a predeclared behavior-policy rollout.
+The Lipschitz assumption in this section is instead deterministic and uniform
+over a forward-invariant state--action region and the policy comparison class.
+Neither type of statement implies the other. In particular, we do not replace
+the uniform \(\epsilon\) in the policy-transfer bound by a marginal conformal
+radius; the scaling experiment tests the deterministic theorem, while the
+coverage experiments test the separate conformal statements.
+
 The reproducible sharpness construction uses
 \(G(x)=L_Gx\), \(\widehat G(x)=L_Gx+\epsilon\), and the Lipschitz reward
 \(-L_r|x|\). Across six values each of \(\epsilon\) and \(\gamma\), the measured
@@ -381,8 +401,8 @@ actuator gain \(g_{\rm act}\). The controller observes the state and boundary
 condition but not \(g_{\rm act}\).
 
 \paragraph{Two-dimensional uncertainty benchmark.}
-The official NeuralOperator Navier--Stokes dataset contains $128\times128$
-input and output vorticity fields at Reynolds number 500. We train a
+The official NeuralOperator Navier--Stokes benchmark contains $128\times128$
+input and output vorticity fields. We train a
 clean-label FNO and a perturbed-label FNO, then evaluate max-score simultaneous
 coverage on an independent split. Because this public dataset contains no
 action variable, it tests function-valued uncertainty calibration only and
@@ -482,6 +502,35 @@ rounded into a guarantee. More importantly, the trajectory statement applies
 only to exchangeable behavior-policy rollouts and does not certify the
 counterfactual action sequences searched by MPC.
 
+\subsection{Official two-dimensional Navier--Stokes audit}
+
+On the official \(128\times128\) benchmark we use 800 proper-training, 200
+audit, and 300 independent test pairs. The max-normalized conformal score gives
+\(q_{0.90}=30.679\). Its empirical simultaneous test coverage is 0.883, while
+the mean one-step relative L2 error is 0.1635 and the mean full coordinate-band
+width is 4.3409. The test proportion is not rounded to the nominal 0.90.
+More importantly, the large max-score multiplier and band width expose a
+failure mode: simultaneous coverage over \(128^2\) output coordinates can be
+too conservative to define a useful planning set. Because these pairs have no
+action channel, this experiment is evidence about function-space calibration
+and dimensionality, not robust control.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Independent-test function-space uncertainty on the official
+NeuralOperator Navier--Stokes benchmark. Band width is the mean full
+coordinate-wise width.}
+\label{tab:ns2d}
+\begin{tabular}{rrrr}
+\toprule
+Relative L2 error & Max-score \(q_{0.90}\) & Simultaneous coverage & Band width\\
+\midrule
+0.1635 & 30.679 & 0.883 & 4.3409\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Preliminary paired gain sweep}
 
 We next fixed the initial field, viscosity, and boundary conditions within
@@ -552,15 +601,19 @@ Adjoint + curvature & 0.925 & 0.2035 & 0.265 & 0.854 & 1.766\\
 \section{Limitations and planned stress tests}
 
 Split conformal validity requires exchangeability between the audit and target
-deployment examples. The guarantee is marginal and one-step; it is not a
-simultaneous trajectory guarantee. The robust objective is first order unless
-the curvature buffer is certified. The pointwise scale can be misspecified; a
-deep FNO ensemble and a learned uncertainty head are therefore required baselines
-\cite{mouli2024uq}. Finally, one-dimensional Burgers control is a mechanism
-test, not evidence of broad PDE-control safety, while public uncontrolled
-Navier--Stokes pairs do not close that gap. Planned stress tests include
-audit-size sweeps, shift-severity sweeps, adversarial actuator degradation,
-paired random seeds, and an action-conditioned two-dimensional system.
+deployment examples. One-step calibration gives marginal transition coverage;
+the separate max-score proposition gives simultaneous coverage only for a
+predeclared, exchangeable behavior-policy rollout. Neither statement certifies
+counterfactual action sequences chosen by MPC, nor does either imply the
+deterministic uniform-error assumption used by the value theorem. The robust
+objective is first order unless the curvature buffer is certified. The
+pointwise scale can be misspecified; a deep FNO ensemble and a learned
+uncertainty head are therefore required baselines \cite{mouli2024uq}. Finally,
+one-dimensional Burgers control is a mechanism test, not evidence of broad
+PDE-control safety, while public uncontrolled Navier--Stokes pairs do not close
+that gap. Planned stress tests include audit-size sweeps, shift-severity
+sweeps, adversarial actuator degradation, paired random seeds, and an
+action-conditioned two-dimensional system.
 
 \section{Conclusion}
 

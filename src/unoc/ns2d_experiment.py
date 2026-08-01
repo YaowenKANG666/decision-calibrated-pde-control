@@ -167,15 +167,24 @@ def save_figure(figure, stem):
     figure.savefig(stem.with_suffix(".png"), dpi=300, bbox_inches="tight")
     figure.savefig(stem.with_suffix(".svg"), bbox_inches="tight")
     figure.savefig(stem.with_suffix(".pdf"), bbox_inches="tight")
+    figure.savefig(stem.with_suffix(".tiff"), dpi=600, bbox_inches="tight")
     plt.close(figure)
 
 
-def field_figure(field, title, stem, cmap="RdBu_r", nonnegative=False):
+def field_figure(
+    field,
+    title,
+    stem,
+    cmap="RdBu_r",
+    nonnegative=False,
+    bound=None,
+    upper=None,
+):
     figure, axis = plt.subplots(figsize=(3.45, 3.0), constrained_layout=True)
     if nonnegative:
-        image = axis.imshow(field, origin="lower", cmap=cmap, vmin=0.0)
+        image = axis.imshow(field, origin="lower", cmap=cmap, vmin=0.0, vmax=upper)
     else:
-        bound = float(np.max(np.abs(field)))
+        bound = float(np.max(np.abs(field))) if bound is None else float(bound)
         image = axis.imshow(field, origin="lower", cmap=cmap, vmin=-bound, vmax=bound)
     axis.set_xlabel("Grid coordinate $x_1$")
     axis.set_ylabel("Grid coordinate $x_2$")
@@ -188,9 +197,22 @@ def field_figure(field, title, stem, cmap="RdBu_r", nonnegative=False):
 def make_figures(history, audit, test, q90, output_dir):
     _style()
     example = test["example"]
+    target_prediction_bound = float(
+        max(np.max(np.abs(example["y"])), np.max(np.abs(example["mean"])))
+    )
     field_figure(example["x"], "Input vorticity", output_dir / "ns2d_01_input")
-    field_figure(example["y"], "Target vorticity", output_dir / "ns2d_02_target")
-    field_figure(example["mean"], "FNO prediction", output_dir / "ns2d_03_prediction")
+    field_figure(
+        example["y"],
+        "Target vorticity",
+        output_dir / "ns2d_02_target",
+        bound=target_prediction_bound,
+    )
+    field_figure(
+        example["mean"],
+        "FNO prediction",
+        output_dir / "ns2d_03_prediction",
+        bound=target_prediction_bound,
+    )
     field_figure(
         example["error"],
         "Absolute prediction error",
@@ -205,13 +227,16 @@ def make_figures(history, audit, test, q90, output_dir):
         cmap="viridis",
         nonnegative=True,
     )
-    covered = (example["error"] <= q90 * example["scale"]).astype(float)
+    pointwise_utilization = example["error"] / np.maximum(
+        q90 * example["scale"], 1e-12
+    )
     field_figure(
-        covered,
-        "Pointwise coverage mask",
-        output_dir / "ns2d_06_coverage_mask",
-        cmap="Greys",
+        pointwise_utilization,
+        "Pointwise band utilization",
+        output_dir / "ns2d_06_band_utilization",
+        cmap="magma",
         nonnegative=True,
+        upper=max(1.0, float(np.max(pointwise_utilization))),
     )
 
     figure, axis = plt.subplots(figsize=(3.45, 2.75), constrained_layout=True)
@@ -262,7 +287,13 @@ def make_figures(history, audit, test, q90, output_dir):
     figure, axis = plt.subplots(figsize=(3.45, 2.75), constrained_layout=True)
     axis.plot(mean_width, empirical_coverage, "o-", color="#D8843F", lw=1.5, ms=4)
     for width, cov, level in zip(mean_width, empirical_coverage, coverage_levels):
-        axis.annotate(f"{level:.3g}", (width, cov), xytext=(3, 2), textcoords="offset points", fontsize=6)
+        axis.annotate(
+            f"{level:.3g}",
+            (width, cov),
+            xytext=(3, 2),
+            textcoords="offset points",
+            fontsize=6,
+        )
     axis.set_xlabel("Mean full band width")
     axis.set_ylabel("Test simultaneous coverage")
     axis.set_title("Coverage–width trade-off")
@@ -281,7 +312,8 @@ def make_figures(history, audit, test, q90, output_dir):
     )
     axis.set_xlabel("Uncalibrated disagreement scale")
     axis.set_ylabel("Absolute pointwise error")
-    axis.set_title("Does disagreement localize error?")
+    scale_error_pearson = float(np.corrcoef(pairs[:, 0], pairs[:, 1])[0, 1])
+    axis.set_title(f"Error localization by disagreement (Pearson r={scale_error_pearson:.2f})")
     save_figure(figure, output_dir / "ns2d_11_error_scale")
 
     return [
@@ -429,6 +461,12 @@ def run(args):
         "test_simultaneous_coverage": float(np.mean(test["scores"] <= q90)),
         "mean_l2_error": float(np.mean(test["l2_errors"])),
         "mean_full_band_width": float(2.0 * q90 * np.mean(test["mean_scales"])),
+        "scale_error_pearson": float(
+            np.corrcoef(
+                test["scale_error_pairs"][:, 0],
+                test["scale_error_pairs"][:, 1],
+            )[0, 1]
+        ),
         "scientific_scope": (
             "2D function-valued uncertainty benchmark; no action channel and "
             "therefore no closed-loop control claim."

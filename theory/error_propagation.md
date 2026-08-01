@@ -134,9 +134,14 @@ u_{t+1}=G(u_t,a_t), \qquad
 Assume on a forward-invariant set:
 
 1. the true transition is \(L_G\)-Lipschitz in state;
-2. the calibrated one-step operator error is uniformly bounded:
+2. the deterministic one-step operator error is uniformly bounded:
    \(\|G(u,a)-\widehat G(u,a)\|\leq\epsilon\);
 3. the same open-loop action sequence is applied to both systems.
+
+This uniform assumption is not a consequence of Proposition 1. Conformal
+coverage controls a probability for a random audited transition; the
+\(\epsilon\) assumption controls every state--action pair in a specified
+region. The code tests their consequences in separate experiments.
 
 ## Proposition 4: multi-step rollout error
 
