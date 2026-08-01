@@ -10,4 +10,6 @@ ambiguity sets, robust MPC, deterministic error propagation, and the controlled
 Burgers and NS2D experiments. Its preliminaries distinguish the continuous PDE
 solution operators from the 64-dimensional Burgers and 16,384-dimensional
 Navier--Stokes maps learned on fixed grids. The code and source result files in
-the repository are the reproducibility record.
+the repository are the reproducibility record. A linked three-level contents
+page provides direct navigation to the PDE definitions, calibration method,
+robust-control construction, theoretical guarantees, and ablation studies.
