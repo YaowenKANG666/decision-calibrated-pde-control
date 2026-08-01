@@ -27,11 +27,26 @@ must be checked against the primary paper before use.
 | C18 | Ávila Pires and Szepesvári, *Policy Error Bounds for MBRL with Factored Linear Models* (COLT 2016) | Weighted-norm policy error bounds | https://proceedings.mlr.press/v49/avilapires16.html |
 | C19 | Mandi et al., *Decision-Focused Learning: Through the Lens of Learning to Rank* (ICML 2022) | Decision-focused learning background | https://proceedings.mlr.press/v162/mandi22a.html |
 | C20 | Li et al., *Fourier Neural Operator for Parametric PDEs* (ICLR 2021) | FNO as the chosen surrogate backbone | https://openreview.net/forum?id=c8P9NQVtmnO |
+| C21 | Kovachki et al., *Neural Operator: Learning Maps Between Function Spaces* (JMLR 2023) | General neural-operator and discretization-invariance background | https://www.jmlr.org/papers/v24/21-1524.html |
+| C22 | Lu et al., *Learning nonlinear operators via DeepONet* (NMI 2021) | Complementary operator-learning architecture | https://www.nature.com/articles/s42256-021-00302-5 |
+| C23 | Boullé and Townsend, *A Mathematical Guide to Operator Learning* (2024) | Mathematical operator-learning overview and notation | https://arxiv.org/abs/2312.14688 |
+| C24 | Ma et al., *Calibrated UQ for Operator Learning via CP* (TMLR 2024) | Functional risk-controlling calibration for operator outputs | https://openreview.net/forum?id=cGpegxy12T |
+| C25 | Moya et al., *Conformalized-DeepONet* (Physica D 2025) | Distribution-free uncertainty for DeepONet outputs | https://arxiv.org/abs/2402.15406 |
+| C26 | Wang et al., *Operator learning for 2D incompressible Navier--Stokes: a CP approach in the data-scarce regime* (2026) | Clean/perturbed FNO scale, max score, simultaneous field coverage, data-scarce layout | https://arxiv.org/abs/2606.08654 |
+| C27 | Millard et al., *Split conformal prediction in the function space with neural operators* (2025) | Function-space CP formulation | https://arxiv.org/abs/2509.04623 |
+| C28 | Bülte et al., *Probabilistic Neural Operators for Functional UQ* (TMLR 2025) | Probabilistic function-valued uncertainty baseline | https://arxiv.org/abs/2502.12902 |
+| C29 | Magnani et al., *Approximate Bayesian Neural Operators* (TMLR 2025) | Bayesian structured UQ for operator learning | https://openreview.net/forum?id=6WvIkYsMA8 |
+| C30 | Magnani et al., *Linearization Turns Neural Operators into Function-Valued Gaussian Processes* (ICML 2025) | Linearized function-valued GP uncertainty | https://openreview.net/forum?id=4Z04wVQ9FY |
+| C31 | Angelopoulos and Bates, *Conformal Prediction: A Gentle Introduction* (2023) | Split-CP theorem, finite-sample order statistic, validity terminology | https://arxiv.org/abs/2107.07511 |
+| C32 | Barber et al., *Conformal Prediction Beyond Exchangeability* (AoS 2023) | Weighted CP and nonexchangeable scope | https://arxiv.org/abs/2202.13415 |
+| C33 | Tibshirani et al., *Conformal Prediction under Covariate Shift* (NeurIPS 2019) | Covariate-shift extension and limitation of ordinary split CP | https://arxiv.org/abs/1904.06019 |
+| C34 | Lakshminarayanan et al., *Simple and Scalable Predictive UQ using Deep Ensembles* (NeurIPS 2017) | Ensemble uncertainty baseline | https://papers.nips.cc/paper/2017/hash/9ef2ed4b7fd2c810847ffa5fa85bce38-Abstract.html |
 
-## Screening pool for the full paper
+## Additional screening pool
 
-The following 40 topics form the remainder of the required 60-candidate
-screening pool. They are discovery targets, not citation-ready records.
+Together with the verified records, the following topics keep the candidate
+pool above the required 60 items. They are discovery targets, not
+citation-ready records.
 
 21. conformal prediction under covariate shift;
 22. conformal risk control;

@@ -1,61 +1,85 @@
 # Research dossier
 
-## Established neighboring results
+## Closest research lines
 
-1. Conformal residual regions have been incorporated into model-based control
-   through constraint tightening and can obtain finite-sample marginal
-   guarantees under exchangeability (Chee et al., 2024).
-2. Weighted conformal covariance models have recently been combined with
-   system-level synthesis for nonlinear OOD MPC (Srinivasan et al., 2026).
-3. Conformal uncertainty sets have a direct robust-optimization
-   interpretation (Johnstone and Cox, 2021).
-4. Decision-aware or end-to-end conformal optimization calibrates uncertainty
-   with respect to downstream loss rather than prediction alone.
-5. Value-aware model learning predates this project: not all model errors are
-   equally relevant to a policy (Farahmand et al., 2017).
-6. Neural-operator uncertainty methods can fail under moderate OOD shift;
-   ensemble disagreement is a strong baseline (Mouli et al., 2024).
+1. **Neural operators.** FNO, DeepONet, and the general neural-operator
+   framework establish fast maps between discretized functions. They motivate
+   the world model but do not supply calibrated uncertainty or robust control.
+2. **Uncertainty for operator learning.** Ensembles, probabilistic neural
+   operators, Bayesian/linearized neural operators, risk-controlling quantile
+   operators, and conformalized DeepONets produce structured field
+   uncertainty. The closest perturbation method trains clean-label and
+   perturbed-label FNOs, then uses a max score for simultaneous Navier--Stokes
+   coverage in a data-scarce regime.
+3. **Conformal robust control.** Chee et al. use weighted CP, constraint
+   tightening, and predictive reference generation. SODA-MPC and
+   conformalized system-level synthesis address OOD finite-dimensional
+   control. These works establish that CP can enter controllers, so novelty
+   cannot be claimed at that generic level.
+4. **Decision-aware error.** Value-aware model learning and robust MBRL show
+   that errors matter through downstream value, while simulation lemmas
+   propagate uniform one-step error to long-horizon value error.
 
 ## Defensible gap
 
-The gap is not “conformal control has never been done.” It is narrower:
-existing learned-control uncertainty sets are commonly judged by state-space
-coverage or safety constraints, while function-valued dynamics can have large
-errors in control-irrelevant directions and small errors in value-sensitive
-directions. The project asks whether an audit-calibrated support function in
-the finite-horizon adjoint direction improves closed-loop decisions at a fixed
-or smaller robustness budget.
+The gap is the interface between calibrated field uncertainty and the
+finite-horizon objective. Operator-UQ papers stop at field coverage and width;
+conformal-control papers largely use finite-dimensional state tubes or
+constraints. The present work asks whether a calibrated anisotropic field set
+can be queried through its support in an MPC sensitivity direction and whether
+that conversion improves independent closed-loop mean or tail cost.
 
-## Proposed object
+## Implemented construction
 
-For learned dynamics mean \(\mu_\theta(x,a)\), scale
-\(\sigma_\theta(x,a)\), and finite-horizon cost sensitivity
-\(\lambda=\nabla_{x^+}\widehat J_H\), define
-
-\[
-s_i=\frac{|\langle\lambda_i,y_i-\mu_i\rangle|}
-{\|\lambda_i\odot\sigma_i\|_2+\delta},\qquad
-q=\operatorname{Quantile}_{1-\alpha}^{\rm conf}\{s_i\}.
-\]
-
-The induced ellipsoid has support
+The implemented score is predictive, not adjoint-calibrated. For residual
+`r`, perturbation scale `sigma`, and deployment audit multiplier `q`, the two
+primary sets are
 
 \[
-\sup_{\Delta\in\mathcal U(x,a)}
-\langle\lambda,\Delta\rangle
-=q\|\lambda\odot\sigma_\theta(x,a)\|_2.
+\mathcal U_2=\{\widehat G+\Delta:
+\|\Delta/\sigma\|_{2,n}\le q_2\},\qquad
+\mathcal U_\infty=\{\widehat G+\Delta:
+|\Delta_j|\le q_\infty\sigma_j\}.
 \]
 
-This quantity enters the robust MPC objective directly. L2 tubes remain the
-main baseline.
+After calibration, the controller queries the sets in the finite-horizon
+adjoint direction `lambda`:
 
-## Falsification criteria
+\[
+h_{\mathcal U_2}(\lambda)=q_2\|\lambda\odot\sigma\|_{2,n},
+\qquad
+h_{\mathcal U_\infty}(\lambda)=
+\frac{q_\infty}{n}\sum_j|\lambda_j|\sigma_j.
+\]
 
-- If adjoint calibration improves coverage but not mean, tail, or worst-case
-  closed-loop cost across seeds, the central empirical claim fails.
-- If gains disappear against an audit-calibrated L2 set, the result is audit
-  adaptation rather than decision calibration.
-- If the FNO scale has weak error correlation, replace it with a deep ensemble
-  or residual quantile model before interpreting robust-control results.
-- If first-order support is inaccurate for large sets, restrict the radius,
-  add second-order curvature, or solve an inner adversarial rollout.
+This ordering is central: calibration constructs a predictive set; decision
+weighting is a downstream support query. The paper does not claim conformal
+validity for an action-dependent adjoint score.
+
+## Theory ledger
+
+- Split CP: finite-sample marginal one-step field coverage on a fixed grid,
+  conditional on the trained models and exchangeability.
+- Trajectory CP: simultaneous time/coordinate coverage only for a predeclared
+  exchangeable behavior-policy trajectory distribution.
+- Support function: exact algebra for ellipsoid and box.
+- Curvature: conditional Taylor remainder for the stacked product set.
+- Rollout/value bounds: deterministic uniform one-step error and Lipschitz
+  assumptions, with explicit CEM optimization error in policy transfer.
+- No conformal result is used to instantiate the uniform epsilon assumption.
+
+## Current evidence and falsification
+
+- Combined-shift source L2 coverage is 0.741; audit ellipsoid and box coverage
+  are 0.906 on 800 test transitions.
+- In 24 matched actuator-gain cases, box-adjoint MPC changes mean/p90 cost by
+  -1.89%/-10.84% versus nominal MPC. This is one controlled sweep, not a
+  multi-seed population claim.
+- The nonlinear adversarial controller is not best; the adjoint value bound is
+  wider than local recursion; the fitted curvature coefficient is zero.
+- NS2D simultaneous coverage is 0.883, full width 4.3409, and scale-error
+  correlation 0.169. A reviewer should interpret this as a high-dimensional
+  failure mode, not a success claim.
+- The central empirical claim fails if multi-seed controlled-PDE experiments
+  erase the audit-box tail advantage or if it loses to an audit-matched
+  isotropic baseline under equal compute.

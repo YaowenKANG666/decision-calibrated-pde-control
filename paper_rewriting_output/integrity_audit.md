@@ -23,7 +23,7 @@
 
 ## Reasoning Depth
 
-**RSN-000** ✅ All 15 rationale rows have adequate depth
+**RSN-000** ✅ All 21 rationale rows have adequate depth
 
 ---
 
