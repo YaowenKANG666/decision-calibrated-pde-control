@@ -189,7 +189,7 @@ The generated report is available at
 If a uniform one-step bound holds on the relevant region,
 
 $$
-\left\lVertG_\star(x,a)-\widehat G(x,a)\right\rVert\le\epsilon,
+\left\lVert G_\star(x,a)-\widehat G(x,a)\right\rVert\le\epsilon,
 $$
 
 and the dynamics are $L_G$-Lipschitz, then
