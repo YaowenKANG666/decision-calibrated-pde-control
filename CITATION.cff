@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If this research prototype is useful, please cite the software and accompanying preprint."
-title: "Perturbation-Calibrated Dynamics Ambiguity Sets for Robust PDE Control"
+title: "From Predictive Coverage to Robust PDE Control: Calibrated Dynamics Ambiguity Sets for Neural Operators"
 type: software
 authors:
   - family-names: Kang

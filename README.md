@@ -1,4 +1,4 @@
-# Perturbation-Calibrated Dynamics Ambiguity Sets for Robust PDE Control
+# From Predictive Coverage to Robust PDE Control: Calibrated Dynamics Ambiguity Sets for Neural Operators
 
 This repository studies how uncertainty from a Fourier Neural Operator (FNO)
 world model can be calibrated into a field-valued dynamics ambiguity set and
