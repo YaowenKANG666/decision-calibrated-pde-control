@@ -58,7 +58,7 @@ window `K` and a proper-training-set floor:
 $$
 \bar d_j=\frac1{|N_K(j)|}\sum_{k\in N_K(j)}d_k,
 \qquad
-\sigma_j(x,a)=\max\{\bar d_j(x,a),\tau_0\},
+\sigma_j(x,a)=\max\lbrace\bar d_j(x,a),\tau_0\rbrace,
 $$
 
 $$
@@ -88,21 +88,21 @@ The resulting ambiguity box is
 
 $$
 \mathcal U_\infty(x,a)=
-\left\{
+\left\lbrace
 \mu(x,a)+\Delta:
 |\Delta_j|\le q\sigma_j(x,a),\;j=1,\ldots,n
-\right\}.
+\right\rbrace.
 $$
 
 Conditional on the two trained operators and their perturbation noise, if the
 audit examples and a new deployment example are exchangeable, then
 
 $$
-\Pr\left\{
+\Pr\left\lbrace
 G_\star(x,a)_j\in
 [\mu_j-q\sigma_j,\mu_j+q\sigma_j]
 \text{ for every }j
-\right\}\ge 1-\alpha.
+\right\rbrace\ge 1-\alpha.
 $$
 
 This is simultaneous-in-coordinate coverage for one random function-valued
@@ -115,10 +115,10 @@ The repository compares the max box above with the normalized ellipsoid
 
 $$
 \mathcal U_2(x,a)=
-\left\{
-\mu+\sigma\odot z:\|z\|_{2,n}\le q_2
-\right\},\qquad
-\|z\|_{2,n}^2=n^{-1}\sum_jz_j^2.
+\left\lbrace
+\mu+\sigma\odot z:\lVert z\rVert_{2,n}\le q_2
+\right\rbrace,\qquad
+\lVert z\rVert_{2,n}^2=n^{-1}\sum_jz_j^2.
 $$
 
 For the normalized inner product
@@ -176,7 +176,7 @@ $$
 For the normalized ellipsoid, the exact margin is
 
 $$
-\beta_i=q_2\sqrt n\|a_i\odot\sigma\|_2.
+\beta_i=q_2\sqrt n\lVert a_i\odot\sigma\rVert_2.
 $$
 
 If the true next state belongs to the calibrated set, satisfaction of the
@@ -222,7 +222,7 @@ If each visited transition satisfies a valid per-step miscoverage bound
 `alpha_t`, regardless of dependence between steps, then
 
 $$
-\Pr\{G_\star(x_t,a_t)\in\mathcal U_t\;\forall t<H\}
+\Pr\lbraceG_\star(x_t,a_t)\in\mathcal U_t\;\forall t<H\rbrace
 \ge1-\sum_{t=0}^{H-1}\alpha_t.
 $$
 

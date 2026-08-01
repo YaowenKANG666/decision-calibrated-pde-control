@@ -31,20 +31,20 @@ an anisotropic ellipsoid
 
 $$
 \mathcal U_2(u,a)
-=\left\{
+=\left\lbrace
 \widehat G_\theta(u,a)+\Delta:
-\left\|\Delta\oslash\sigma_\theta(u,a)\right\|_{2,n}\le q_2
-\right\},
+\left\lVert\Delta\oslash\sigma_\theta(u,a)\right\rVert_{2,n}\le q_2
+\right\rbrace,
 $$
 
 or a simultaneous coordinate box
 
 $$
 \mathcal U_\infty(u,a)
-=\left\{
+=\left\lbrace
 \widehat G_\theta(u,a)+\Delta:
 |\Delta_j|\le q_\infty\sigma_{\theta,j}(u,a)\ \text{for every }j
-\right\}.
+\right\rbrace.
 $$
 
 The controller queries the same set through either its exact support function
@@ -54,7 +54,7 @@ field inner product,
 $$
 \sup_{\Delta\in\mathcal U_2}
 \langle\lambda,\Delta\rangle_n
-=q_2\left\|\lambda\odot\sigma_\theta\right\|_{2,n}.
+=q_2\left\lVert\lambda\odot\sigma_\theta\right\rVert_{2,n}.
 $$
 
 Split conformal coverage, deterministic error propagation, and closed-loop
@@ -189,7 +189,7 @@ The generated report is available at
 If a uniform one-step bound holds on the relevant region,
 
 $$
-\left\|G_\star(x,a)-\widehat G(x,a)\right\|\le\epsilon,
+\left\lVertG_\star(x,a)-\widehat G(x,a)\right\rVert\le\epsilon,
 $$
 
 and the dynamics are $L_G$-Lipschitz, then

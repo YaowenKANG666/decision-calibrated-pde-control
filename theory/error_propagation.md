@@ -7,39 +7,39 @@ bounds, and planning approximations.
 ## Proposition 1: finite-sample dynamics-set coverage
 
 Let a trained dynamics model output a mean and a positive pointwise scale,
-\(\widehat G_\theta(x,a)\) and \(\sigma_\theta(x,a)\). For an independent
-deployment-audit sample \(Z_i=(x_i,a_i,y_i)\), define
+$\widehat G_\theta(x,a)$ and $\sigma_\theta(x,a)$. For an independent
+deployment-audit sample $Z_i=(x_i,a_i,y_i)$, define
 
 $$
 S_i=
-\left\|
+\left\lVert
 \frac{y_i-\widehat G_\theta(x_i,a_i)}
 {\sigma_\theta(x_i,a_i)}
-\right\|_{2,n},
+\right\rVert_{2,n},
 \qquad
-\|v\|_{2,n}^2=\frac1n\sum_{j=1}^n v_j^2.
+\lVert v\rVert_{2,n}^2=\frac1n\sum_{j=1}^n v_j^2.
 $$
 
-For \(m\) audit points, take the order statistic with rank
-\(k=\lceil(m+1)(1-\alpha)\rceil\), using the usual atom at \(+\infty\) if
-\(k>m\), and call it \(q\).
+For $m$ audit points, take the order statistic with rank
+$k=\lceil(m+1)(1-\alpha)\rceil$, using the usual atom at $+\infty$ if
+$k>m$, and call it $q$.
 If the audit points and a new deployment point are exchangeable conditional
 on the trained model, the standard split-conformal rank argument gives
 
 $$
-\Pr\left\{
+\Pr\left\lbrace
 G(x,a)\in\mathcal U_\theta(x,a)
-\right\}\ge 1-\alpha,
+\right\rbrace\ge 1-\alpha,
 $$
 
 where
 
 $$
 \mathcal U_\theta(x,a)=
-\left\{
+\left\lbrace
 \widehat G_\theta(x,a)+\sigma_\theta(x,a)\odot z:
-\|z\|_{2,n}\le q
-\right\}.
+\lVert z\rVert_{2,n}\le q
+\right\rbrace.
 $$
 
 This is marginal one-step coverage on the audited deployment distribution. It
@@ -55,33 +55,33 @@ action sequences.
 ## Proposition 2: exact decision support of the ambiguity set
 
 Use the normalized inner product
-\(\langle v,w\rangle_n=n^{-1}\sum_jv_jw_j\). For any cost-to-go sensitivity
-\(\lambda\),
+$\langle v,w\rangle_n=n^{-1}\sum_jv_jw_j$. For any cost-to-go sensitivity
+$\lambda$,
 
 $$
-\sup_{\Delta:\|\Delta/\sigma\|_{2,n}\le q}
+\sup_{\Delta:\lVert\Delta/\sigma\rVert_{2,n}\le q}
 \langle\lambda,\Delta\rangle_n
-=q\|\lambda\odot\sigma\|_{2,n}.
+=q\lVert\lambda\odot\sigma\rVert_{2,n}.
 $$
 
-To prove this, substitute \(\Delta=\sigma\odot z\) and apply Cauchy--Schwarz.
+To prove this, substitute $\Delta=\sigma\odot z$ and apply Cauchy--Schwarz.
 Equality is attained by
 
 $$
 z^\star
 =q\frac{\lambda\odot\sigma}
-{\|\lambda\odot\sigma\|_{2,n}}.
+{\lVert\lambda\odot\sigma\rVert_{2,n}}.
 $$
 
 Thus a predictive, anisotropic dynamics ellipsoid becomes decision-effective
 by querying its support in the finite-horizon adjoint direction. No
 direction-specific recalibration is required, so the conformal set and the
-MPC support use the same \(q\).
+MPC support use the same $q$.
 
 The nonlinear controller instead uses the rectangular product of these sets:
 
 $$
-\min_{a_{0:H-1}}\max_{\|z_t\|_{2,n}\le q}
+\min_{a_{0:H-1}}\max_{\lVert z_t\rVert_{2,n}\le q}
 \sum_{t=1}^{H}\ell(x_t)+\sum_{t=0}^{H-1}r(a_t),
 \quad
 x_{t+1}=\widehat G_\theta(x_t,a_t)
@@ -90,22 +90,22 @@ $$
 
 Projected gradient ascent gives a computable lower bound on the inner maximum,
 not a certificate that the global maximum was found. Also, marginal one-step
-conformal coverage does not imply that all \(H\) rectangular sets contain the
+conformal coverage does not imply that all $H$ rectangular sets contain the
 true transitions simultaneously.
 
 ## Proposition 3: first-order robust objective and its remainder
 
-Let \(J_H(x^+)\) denote the remaining nominal horizon cost after a predicted
-next state, and let \(\lambda=\nabla J_H(\widehat x^+)\). The linearized
+Let $J_H(x^+)$ denote the remaining nominal horizon cost after a predicted
+next state, and let $\lambda=\nabla J_H(\widehat x^+)$. The linearized
 worst-case cost over the calibrated set is exactly
 
 $$
 J_H(\widehat x^+)
-+q\|\lambda\odot\sigma_\theta(x,a)\|_{2,n}.
++q\lVert\lambda\odot\sigma_\theta(x,a)\rVert_{2,n}.
 $$
 
-If \(J_H\) is twice differentiable and its Hessian has operator norm at most
-\(M_H\) in the normalized Euclidean geometry on the ambiguity set, Taylor's
+If $J_H$ is twice differentiable and its Hessian has operator norm at most
+$M_H$ in the normalized Euclidean geometry on the ambiguity set, Taylor's
 theorem yields the conditional upper bound
 
 $$
@@ -113,14 +113,14 @@ $$
 J_H(\widehat x^++\Delta)
 \le
 J_H(\widehat x^+)
-+q\|\lambda\odot\sigma\|_{2,n}
-+\frac{M_H}{2}q^2\|\sigma\|_\infty^2.
++q\lVert\lambda\odot\sigma\rVert_{2,n}
++\frac{M_H}{2}q^2\lVert\sigma\rVert_\infty^2.
 $$
 
 The current controller implements the first two terms. It is therefore an
 exact robust counterpart for the linearized cost, and a first-order
 approximation for the nonlinear cost. A certified nonlinear claim requires
-estimating or bounding \(M_H\) and adding the third term.
+estimating or bounding $M_H$ and adding the third term.
 
 ## Setting
 
@@ -133,26 +133,26 @@ $$
 
 Assume on a forward-invariant set:
 
-1. the true transition is \(L_G\)-Lipschitz in state;
+1. the true transition is $L_G$-Lipschitz in state;
 2. the deterministic one-step operator error is uniformly bounded:
-   \(\|G(u,a)-\widehat G(u,a)\|\leq\epsilon\);
+   $\lVert G(u,a)-\widehat G(u,a)\rVert\leq\epsilon$;
 3. the same open-loop action sequence is applied to both systems.
 
 This uniform assumption is not a consequence of Proposition 1. Conformal
 coverage controls a probability for a random audited transition; the
-\(\epsilon\) assumption controls every state--action pair in a specified
+$\epsilon$ assumption controls every state--action pair in a specified
 region. The code tests their consequences in separate experiments.
 
 ## Proposition 4: multi-step rollout error
 
-Writing \(e_t=\|u_t-\widehat u_t\|\), the triangle inequality gives
+Writing $e_t=\lVert u_t-\widehat u_t\rVert$, the triangle inequality gives
 
 $$
 e_{t+1}
 \leq
-\|G(u_t,a_t)-G(\widehat u_t,a_t)\|
+\lVert G(u_t,a_t)-G(\widehat u_t,a_t)\rVert
 +
-\|G(\widehat u_t,a_t)-\widehat G(\widehat u_t,a_t)\|
+\lVert G(\widehat u_t,a_t)-\widehat G(\widehat u_t,a_t)\rVert
 \leq L_Ge_t+\epsilon.
 $$
 
@@ -177,8 +177,8 @@ $$
 
 ## Proposition 5: discounted value error
 
-Suppose the state-dependent stage reward is \(L_r\)-Lipschitz and
-\(\gamma L_G<1\). For any fixed open-loop action sequence,
+Suppose the state-dependent stage reward is $L_r$-Lipschitz and
+$\gamma L_G<1$. For any fixed open-loop action sequence,
 
 $$
 |V_G-V_{\widehat G}|
@@ -190,11 +190,11 @@ L_r\sum_{t\geq0}\gamma^t e_t
 $$
 
 For a feedback-policy class, assume every true and learned closed-loop map
-\(x\mapsto G(x,\pi(x))\) and
-\(x\mapsto\widehat G(x,\pi(x))\) is \(L_G\)-Lipschitz and the one-step model
+$x\mapsto G(x,\pi(x))$ and
+$x\mapsto\widehat G(x,\pi(x))$ is $L_G$-Lipschitz and the one-step model
 error bound holds uniformly over the visited state-action set. Also assume the
-induced closed-loop reward \(r_\pi(x)\), including any action penalty through
-\(\pi(x)\), is uniformly \(L_r\)-Lipschitz. Then the fixed-policy bound is
+induced closed-loop reward $r_\pi(x)$, including any action penalty through
+$\pi(x)$, is uniformly $L_r$-Lipschitz. Then the fixed-policy bound is
 uniform over that class. The standard two-model optimality decomposition gives
 
 $$
@@ -204,7 +204,7 @@ V_G^{\pi^\star}-V_G^{\widehat\pi}
 {(1-\gamma)(1-\gamma L_G)}.
 $$
 
-In the non-expansive case \(L_G\leq1\),
+In the non-expansive case $L_G\leq1$,
 
 $$
 V_G^{\pi^\star}-V_G^{\widehat\pi}
@@ -212,7 +212,7 @@ V_G^{\pi^\star}-V_G^{\widehat\pi}
 \frac{2\gamma L_r}{(1-\gamma)^2}\epsilon,
 $$
 
-which has the requested \(O(\epsilon/(1-\gamma)^2)\) form.
+which has the requested $O(\epsilon/(1-\gamma)^2)$ form.
 
 ### Sharpness witness and reward experiment
 
@@ -227,7 +227,7 @@ G(x)=L_Gx,
 \qquad x_0=0,
 $$
 
-with the \(L_r\)-Lipschitz reward \(r(x)=-L_r|x|\). The true trajectory stays
+with the $L_r$-Lipschitz reward $r(x)=-L_r|x|$. The true trajectory stays
 at zero, while
 
 $$
@@ -244,7 +244,7 @@ $$
 {(1-\gamma)(1-\gamma L_G)}.
 $$
 
-For \(L_G=1\), equality becomes
+For $L_G=1$, equality becomes
 
 $$
 |V_G-V_{\widehat G}|
