@@ -1,4 +1,4 @@
-"""Draw the paper's uncertainty-to-control schematic and claim ledger."""
+"""Draw the compact uncertainty-to-control schematic used in the paper."""
 
 from __future__ import annotations
 
@@ -8,71 +8,60 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Ellipse, FancyArrowPatch, FancyBboxPatch, Rectangle
+from matplotlib.patches import Circle, Ellipse, FancyArrowPatch, FancyBboxPatch, Rectangle
 
-INK = "#273444"
-MUTED = "#667585"
+INK = "#243447"
+MUTED = "#718096"
 BLUE = "#315F8C"
-BLUE_LIGHT = "#E4EEF7"
-TEAL = "#347C78"
-TEAL_LIGHT = "#E1F0EE"
-GOLD = "#A66A1F"
-GOLD_LIGHT = "#F7EBD8"
-VIOLET = "#70558B"
-VIOLET_LIGHT = "#EEE8F3"
-RED = "#A6463D"
-RED_LIGHT = "#F6E5E2"
+BLUE_LIGHT = "#EAF1F8"
+TEAL = "#2F7E79"
+TEAL_LIGHT = "#E7F3F1"
+GOLD = "#B8792A"
+GOLD_LIGHT = "#FAF1E3"
+VIOLET = "#71558B"
+VIOLET_LIGHT = "#F0EBF5"
 
 
-def rounded_box(axis, xy, width, height, face, title, body, edge=INK, title_color=INK):
+def arrow(axis, x0: float, x1: float, y: float = 0.50, color: str = MUTED) -> None:
+    axis.add_patch(
+        FancyArrowPatch(
+            (x0, y),
+            (x1, y),
+            arrowstyle="-|>",
+            mutation_scale=9,
+            linewidth=1.05,
+            color=color,
+            shrinkA=1,
+            shrinkB=1,
+        )
+    )
+
+
+def card(axis, center: float, face: str, edge: str, title: str, symbol: str):
+    width, y0, height = 0.155, 0.21, 0.61
+    x0 = center - width / 2
     patch = FancyBboxPatch(
-        xy,
+        (x0, y0),
         width,
         height,
-        boxstyle="round,pad=0.010,rounding_size=0.016",
+        boxstyle="round,pad=0.010,rounding_size=0.022",
         linewidth=0.9,
         edgecolor=edge,
         facecolor=face,
     )
     axis.add_patch(patch)
-    x, y = xy
     axis.text(
-        x + 0.018,
-        y + height - 0.050,
+        center,
+        0.745,
         title,
-        ha="left",
+        ha="center",
         va="center",
-        fontsize=7.3,
+        fontsize=7.4,
         fontweight="bold",
-        color=title_color,
+        color=edge,
     )
-    axis.text(
-        x + 0.018,
-        y + height - 0.105,
-        body,
-        ha="left",
-        va="top",
-        fontsize=6.35,
-        linespacing=1.28,
-        color=INK,
-    )
-    return patch
-
-
-def arrow(axis, start, end, color=MUTED, width=1.05, connectionstyle="arc3"):
-    axis.add_patch(
-        FancyArrowPatch(
-            start,
-            end,
-            arrowstyle="-|>",
-            mutation_scale=9,
-            linewidth=width,
-            color=color,
-            connectionstyle=connectionstyle,
-            shrinkA=2,
-            shrinkB=2,
-        )
-    )
+    axis.text(center, 0.275, symbol, ha="center", va="center", fontsize=7.2, color=INK)
+    return x0, width
 
 
 def draw(output_stem: Path, write_tiff: bool = False) -> None:
@@ -85,134 +74,134 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
             "font.size": 7,
         }
     )
-    figure, axis = plt.subplots(figsize=(7.25, 4.25), constrained_layout=True)
+
+    figure, axis = plt.subplots(figsize=(7.2, 2.15), constrained_layout=True)
     axis.set_xlim(0, 1)
     axis.set_ylim(0, 1)
     axis.axis("off")
 
-    axis.text(
-        0.02,
-        0.965,
-        "Predictive scale  →  calibrated function-space set  →  decision-effective robust control",
-        ha="left",
-        va="center",
-        fontsize=9.3,
-        fontweight="bold",
-        color=INK,
+    centers = [0.095, 0.292, 0.489, 0.686, 0.895]
+    cards = [
+        card(axis, centers[0], BLUE_LIGHT, BLUE, "Twin FNOs", r"$\widehat G,\,\widetilde G$"),
+        card(axis, centers[1], BLUE_LIGHT, BLUE, "Disagreement", r"$\sigma(x,a)$"),
+        card(axis, centers[2], GOLD_LIGHT, GOLD, "Split conformal", r"$q_{1-\alpha}$"),
+        card(axis, centers[3], TEAL_LIGHT, TEAL, "Field set", r"$\mathcal{U}(x,a)$"),
+        card(axis, centers[4], VIOLET_LIGHT, VIOLET, "Robust MPC", r"$a_t^*$"),
+    ]
+
+    for (_, width), (next_x, _) in zip(cards[:-1], cards[1:]):
+        current_x = next_x - (centers[1] - centers[0]) + width
+        arrow(axis, current_x + 0.012, next_x - 0.012)
+
+    # Twin-operator icon: identical inputs, clean and perturbed output traces.
+    x = np.linspace(centers[0] - 0.052, centers[0] + 0.052, 80)
+    phase = (x - x.min()) / (x.max() - x.min())
+    axis.plot(x, 0.575 + 0.025 * np.sin(2.3 * np.pi * phase), color=BLUE, lw=1.35)
+    axis.plot(
+        x,
+        0.505 + 0.025 * np.sin(2.3 * np.pi * phase + 0.22),
+        color=BLUE,
+        lw=1.15,
+        ls="--",
     )
+    axis.add_patch(
+        Rectangle(
+            (centers[0] - 0.058, 0.475),
+            0.116,
+            0.13,
+            fill=False,
+            ec=BLUE,
+            lw=0.65,
+        )
+    )
+
+    # Disagreement icon: a localized, spatially varying scale.
+    x = np.linspace(centers[1] - 0.055, centers[1] + 0.055, 120)
+    z = (x - x.min()) / (x.max() - x.min())
+    scale = 0.013 + 0.045 * np.exp(-((z - 0.64) / 0.22) ** 2)
+    axis.fill_between(x, 0.535 - scale, 0.535 + scale, color=TEAL, alpha=0.24, lw=0)
+    axis.plot(x, 0.535 + 0.012 * np.sin(3 * np.pi * z), color=TEAL, lw=1.2)
+
+    # Conformal icon: empirical scores and the selected finite-sample order statistic.
+    score_x = centers[2] + np.linspace(-0.052, 0.052, 8)
+    score_y = np.array([0.485, 0.497, 0.512, 0.526, 0.545, 0.566, 0.585, 0.628])
+    axis.scatter(score_x, score_y, s=8, facecolor="white", edgecolor=GOLD, linewidth=0.8, zorder=3)
+    axis.plot([centers[2] - 0.061, centers[2] + 0.061], [0.587, 0.587], color=GOLD, lw=1.15)
+
+    # Function-space geometry icon: anisotropic set and decision direction.
+    axis.add_patch(Ellipse((centers[3], 0.54), 0.104, 0.073, angle=18, fc="white", ec=TEAL, lw=1.1))
+    axis.add_patch(
+        Ellipse(
+            (centers[3], 0.54),
+            0.052,
+            0.036,
+            angle=18,
+            fill=False,
+            ec=TEAL,
+            lw=0.65,
+            ls="--",
+        )
+    )
+    axis.add_patch(
+        FancyArrowPatch(
+            (centers[3] - 0.006, 0.536),
+            (centers[3] + 0.058, 0.596),
+            arrowstyle="-|>",
+            mutation_scale=7,
+            color=INK,
+            lw=0.9,
+        )
+    )
+
+    # Closed-loop icon: controller and deployed PDE linked in feedback.
+    left, right, y = centers[4] - 0.037, centers[4] + 0.037, 0.54
+    axis.add_patch(Circle((left, y), 0.026, fc="white", ec=VIOLET, lw=1.0))
+    axis.add_patch(Circle((right, y), 0.026, fc="white", ec=INK, lw=1.0))
+    axis.text(left, y, "M", ha="center", va="center", fontsize=6.2, fontweight="bold", color=VIOLET)
+    axis.text(right, y, "P", ha="center", va="center", fontsize=6.2, fontweight="bold", color=INK)
+    axis.add_patch(
+        FancyArrowPatch(
+            (left + 0.025, y + 0.012),
+            (right - 0.025, y + 0.012),
+            arrowstyle="-|>",
+            mutation_scale=6,
+            color=VIOLET,
+            lw=0.9,
+        )
+    )
+    axis.add_patch(
+        FancyArrowPatch(
+            (right - 0.025, y - 0.015),
+            (left + 0.025, y - 0.015),
+            arrowstyle="-|>",
+            mutation_scale=6,
+            color=INK,
+            lw=0.9,
+        )
+    )
+
+    # Three data roles, shown once rather than repeated inside every stage.
+    axis.text(0.194, 0.91, "proper training", ha="center", va="center", fontsize=6.4, color=BLUE)
+    axis.plot([0.035, 0.353], [0.875, 0.875], color=BLUE, lw=1.2)
+    axis.text(0.588, 0.91, "deployment audit", ha="center", va="center", fontsize=6.4, color=GOLD)
+    axis.plot([0.429, 0.747], [0.875, 0.875], color=GOLD, lw=1.2)
+    axis.text(0.895, 0.91, "closed loop", ha="center", va="center", fontsize=6.4, color=VIOLET)
+    axis.plot([0.818, 0.972], [0.875, 0.875], color=VIOLET, lw=1.2)
+
     axis.text(
-        0.02,
-        0.925,
-        "The FNO is a replaceable world model; the contribution is the uncertainty-to-decision interface.",
-        ha="left",
+        0.5,
+        0.085,
+        "predictive sensitivity  →  calibrated dynamics geometry  →  objective-aware action",
+        ha="center",
         va="center",
-        fontsize=6.55,
+        fontsize=6.7,
         color=MUTED,
     )
 
-    # a: proper training, with two explicit operator branches.
-    rounded_box(
-        axis,
-        (0.02, 0.54),
-        0.205,
-        0.33,
-        BLUE_LIGHT,
-        "a  Proper training split",
-        r"$\mathcal{D}_{\mathrm{tr}}$ is used twice" + "\nclean targets  →  base FNO" + "\nperturbed targets  →  replica",
-        edge=BLUE,
-        title_color=BLUE,
-    )
-    axis.add_patch(Rectangle((0.044, 0.584), 0.066, 0.035, facecolor="white", edgecolor=BLUE, lw=0.7))
-    axis.add_patch(Rectangle((0.135, 0.584), 0.066, 0.035, facecolor="white", edgecolor=BLUE, lw=0.7))
-    axis.text(0.077, 0.601, r"$\widehat G$", ha="center", va="center", fontsize=6.7, color=BLUE)
-    axis.text(0.168, 0.601, r"$\widetilde G$", ha="center", va="center", fontsize=6.7, color=BLUE)
-    axis.text(0.122, 0.555, r"$\sigma=\mathrm{Smooth}(|\widehat G-\widetilde G|)\vee\tau_0$", ha="center", va="center", fontsize=5.8)
-
-    # b: disjoint audit and split conformal quantile.
-    rounded_box(
-        axis,
-        (0.265, 0.54),
-        0.205,
-        0.33,
-        GOLD_LIGHT,
-        "b  Deployment audit split",
-        r"$\mathcal{D}_{\mathrm{cal}}\perp\mathcal{D}_{\mathrm{tr}}$" + "\nnormalized residual score" + "\nfinite-sample order statistic",
-        edge=GOLD,
-        title_color=GOLD,
-    )
-    axis.text(0.367, 0.612, r"$S_i=\| (y_i-\widehat G_i)/\sigma_i\|$", ha="center", va="center", fontsize=6.15)
-    axis.text(0.367, 0.568, r"$q=S_{(\lceil(m+1)(1-\alpha)\rceil)}$", ha="center", va="center", fontsize=6.15, fontweight="bold", color=GOLD)
-
-    # c: function-space geometry and support functions.
-    rounded_box(
-        axis,
-        (0.510, 0.54),
-        0.205,
-        0.33,
-        TEAL_LIGHT,
-        "c  Dynamics ambiguity set",
-        r"$\mathcal{U}(x,a)=\widehat G+\sigma\odot Z_q$" + "\nellipsoid or simultaneous box" + "\ngeometry controls support",
-        edge=TEAL,
-        title_color=TEAL,
-    )
-    axis.add_patch(Ellipse((0.565, 0.585), 0.075, 0.045, facecolor="white", edgecolor=TEAL, lw=0.9))
-    axis.add_patch(Rectangle((0.625, 0.5625), 0.055, 0.045, facecolor="white", edgecolor=TEAL, lw=0.9))
-    axis.text(0.622, 0.625, r"$h_{\mathcal{U}}(\lambda)$", ha="center", va="center", fontsize=6.1, color=TEAL)
-
-    # d: planning block, intentionally dominant.
-    rounded_box(
-        axis,
-        (0.755, 0.49),
-        0.225,
-        0.38,
-        VIOLET_LIGHT,
-        "d  Decision-effective MPC",
-        "candidate actions  →  FNO rollout\ninner query: adjoint support or PGD\nouter search: receding-horizon CEM",
-        edge=VIOLET,
-        title_color=VIOLET,
-    )
-    axis.text(0.868, 0.585, r"$\min_{\mathbf{a}}\;\max_{\Delta_{0:H-1}\in\mathcal{U}^{H}} J_H$", ha="center", va="center", fontsize=7.0, fontweight="bold", color=VIOLET)
-    axis.text(0.868, 0.535, r"fast: $q\|\lambda\odot\sigma\|$   |   nonlinear: PGD", ha="center", va="center", fontsize=5.9)
-
-    arrow(axis, (0.225, 0.705), (0.265, 0.705), BLUE)
-    arrow(axis, (0.470, 0.705), (0.510, 0.705), GOLD)
-    arrow(axis, (0.715, 0.705), (0.755, 0.705), TEAL)
-
-    # Closed-loop deployment connection.
-    plant = FancyBboxPatch((0.755, 0.345), 0.105, 0.075, boxstyle="round,pad=0.008", facecolor="white", edgecolor=INK, lw=0.85)
-    controller = FancyBboxPatch((0.875, 0.345), 0.105, 0.075, boxstyle="round,pad=0.008", facecolor="white", edgecolor=VIOLET, lw=0.85)
-    axis.add_patch(plant)
-    axis.add_patch(controller)
-    axis.text(0.8075, 0.382, "deployed PDE", ha="center", va="center", fontsize=6.2, fontweight="bold")
-    axis.text(0.9275, 0.382, "robust MPC", ha="center", va="center", fontsize=6.2, fontweight="bold", color=VIOLET)
-    arrow(axis, (0.875, 0.382), (0.860, 0.382), VIOLET)
-    arrow(axis, (0.807, 0.345), (0.928, 0.345), INK, connectionstyle="arc3,rad=-0.35")
-    axis.text(0.864, 0.322, r"state $x_t$ / action $a_t$", ha="center", va="center", fontsize=5.8, color=MUTED)
-    arrow(axis, (0.868, 0.49), (0.927, 0.420), VIOLET)
-
-    # Guarantee ledger: three statements that must not be collapsed.
-    axis.text(0.02, 0.405, "e  Claim and guarantee ledger", ha="left", va="center", fontsize=7.3, fontweight="bold", color=INK)
-    ledger = [
-        (0.02, BLUE_LIGHT, BLUE, "Finite-sample statistical", "Exchangeable audit + split CP\nimplies marginal field coverage"),
-        (0.263, RED_LIGHT, RED, "Deterministic propagation", r"uniform $\epsilon$ + Lipschitz dynamics" + "\nimplies rollout/value bounds"),
-        (0.506, TEAL_LIGHT, TEAL, "Independent decision evidence", "matched closed-loop tests\nimply mean/tail-cost comparison"),
-    ]
-    for x, face, edge, title, body in ledger:
-        rounded_box(axis, (x, 0.075), 0.205, 0.265, face, title, body, edge=edge, title_color=edge)
-    for x in (0.235, 0.478):
-        axis.text(x, 0.205, "≠", ha="center", va="center", fontsize=12, fontweight="bold", color=RED)
-    axis.text(0.755, 0.206, "No automatic implication", ha="left", va="center", fontsize=6.25, fontweight="bold", color=RED)
-    axis.text(0.755, 0.159, "coverage is not a safety certificate\nand does not prove control benefit", ha="left", va="center", fontsize=6.15, linespacing=1.3, color=INK)
-
-    # Small signal trace for a PDE-flavoured visual cue without using raster art.
-    xs = np.linspace(0.767, 0.965, 120)
-    ys = 0.105 + 0.018 * np.sin(10 * np.pi * (xs - xs.min()) / (xs.max() - xs.min())) * np.exp(-1.6 * (xs - xs.min()))
-    axis.plot(xs, ys, color=VIOLET, lw=1.0)
-
     output_stem.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(output_stem.with_suffix(".png"), dpi=300, bbox_inches="tight")
     figure.savefig(output_stem.with_suffix(".svg"), bbox_inches="tight")
     figure.savefig(output_stem.with_suffix(".pdf"), bbox_inches="tight")
+    figure.savefig(output_stem.with_suffix(".png"), dpi=400, bbox_inches="tight")
     if write_tiff:
         figure.savefig(output_stem.with_suffix(".tiff"), dpi=600, bbox_inches="tight")
     plt.close(figure)
@@ -220,7 +209,11 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output-stem", type=Path, default=Path("figures/method_01_chain_schematic"))
+    parser.add_argument(
+        "--output-stem",
+        type=Path,
+        default=Path("figures/method_01_chain_schematic"),
+    )
     parser.add_argument("--tiff", action="store_true")
     args = parser.parse_args()
     draw(args.output_stem, args.tiff)
