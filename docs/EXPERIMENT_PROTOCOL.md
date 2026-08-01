@@ -4,6 +4,49 @@ This document records what is fixed and what is varied in every reported
 comparison. It is intended to prevent a change in data, model, calibration,
 and controller from being interpreted as a single-factor ablation.
 
+## Task-validity gate: persistent forcing
+
+The revised primary Burgers task is validated before fitting an FNO. Its plant
+contains persistent external forcing and two fixed Gaussian actuator profiles:
+
+$$
+u_t+u u_x=\nu u_{xx}+f_{\mathrm{ext}}(x,t)
++g_{\mathrm{act}}\sum_{k=1}^{2}a_{t,k}b_k(x).
+$$
+
+The state reference is zero. Unlike an unforced regulation problem, passive
+viscous decay cannot remove the continuing disturbance. The stage loss uses a
+uniform spatial mean of squared tracking error plus
+$0.002\lVert a_t\rVert_2^2$; the terminal tracking weight is four. These
+constants are fixed before sampling the test population.
+
+One hundred test cases are drawn independently from the following joint
+distribution. Both controllers use the identical draw within each pair.
+
+| Quantity | Test distribution |
+|---|---:|
+| viscosity | Uniform(0.008, 0.018) |
+| each boundary value | Uniform(-0.03, 0.03) |
+| latent actuator gain | Uniform(0.65, 1.35) |
+| forcing amplitude | Uniform(0.40, 0.80) |
+| forcing frequency | Uniform(0.50, 1.50) |
+| forcing phase | Uniform(0, 2 pi) |
+| initial-field amplitude | Uniform(0.03, 0.12) |
+
+The uncontrolled baseline fixes both actions to zero. PDE-oracle MPC calls the
+same finite-difference transition routine as the physical plant during
+planning. It uses horizon six, 64 candidates, eight elites, three CEM
+iterations, and common deterministic seeds indexed by case and control time.
+“Oracle” means exact model access, not exact solution of the nonconvex planning
+problem. A higher-budget audit uses horizon eight, 128 candidates, 16 elites,
+and five iterations on the first 20 test cases.
+
+Reported statistics are mean cost with a 95% bootstrap interval, median cost,
+p90 cost with a bootstrap interval, mean control effort, and paired oracle
+minus uncontrolled differences. Five thousand bootstrap resamples are used in
+the main run. The synthetic failure threshold is not used as primary evidence
+because neither controller violated the preregistered value in this draw.
+
 ## FNO world model
 
 The controlled-Burgers experiments use a residual Fourier Neural Operator.
@@ -57,9 +100,11 @@ of 0.90, and 800 compound-shift test transitions.
 Reported outcomes are field coverage, mean radius, decision-direction
 coverage, and mean decision support. Coverage and width are reported together.
 
-## Ablation B: robust-control interface
+## Legacy ablation B: robust-control interface
 
-This group uses the same FNO pair and the same 24 plants. The plants form a
+This mechanism-debugging group uses the same FNO pair and the same 24 plants.
+It will be replaced by independent joint-distribution tests in the revised
+primary experiment. The plants form a
 deterministic actuator-gain sweep from -0.5 to 1.5. Viscosity, boundary values,
 and the initial field are common to all cases. Every controller is evaluated
 for 20 receding-horizon steps. The CEM random seed is shared across controller
@@ -108,7 +153,9 @@ maximum normalized coordinate residual as one score per test field.
 
 ## Replication boundary
 
-The primary Burgers and NS2D tables condition on one trained model pair with
-seed 27. Repeated calibration/test partitions or matched plant cases quantify
-conditional variability, not training-seed variability. The current ablations
-support mechanism isolation but not population-level superiority.
+The legacy FNO and NS2D tables condition on one trained model pair with seed
+27. Repeated calibration/test partitions or matched plant cases quantify
+conditional variability, not training-seed variability. The persistent-
+forcing task-validity gate samples 100 independent plants but does not contain
+a learned model. Population-level learned-controller claims remain deferred
+until the planned five-seed study is complete.

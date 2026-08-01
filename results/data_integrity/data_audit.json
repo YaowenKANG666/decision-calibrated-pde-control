@@ -2,6 +2,131 @@
   "status": "PASS",
   "checks": [
     {
+      "name": "Forced task independent-case row count",
+      "status": "PASS",
+      "detail": "rows=100, stored=100"
+    },
+    {
+      "name": "Forced task case identifiers are unique",
+      "status": "PASS",
+      "detail": "unique_cases=100"
+    },
+    {
+      "name": "Forced task uncontrolled: finite values",
+      "status": "PASS",
+      "detail": "n=100"
+    },
+    {
+      "name": "Forced task uncontrolled: mean cost",
+      "status": "PASS",
+      "detail": "observed=0.589950965608, stored=0.589950965608, abs_diff=0"
+    },
+    {
+      "name": "Forced task uncontrolled: median cost",
+      "status": "PASS",
+      "detail": "observed=0.524921133919, stored=0.524921133919, abs_diff=0"
+    },
+    {
+      "name": "Forced task uncontrolled: p90 cost",
+      "status": "PASS",
+      "detail": "observed=1.05992130827, stored=1.05992130827, abs_diff=0"
+    },
+    {
+      "name": "Forced task uncontrolled: mean control effort",
+      "status": "PASS",
+      "detail": "observed=0, stored=0, abs_diff=0"
+    },
+    {
+      "name": "Forced task uncontrolled: failure rate",
+      "status": "PASS",
+      "detail": "observed=0, stored=0, abs_diff=0"
+    },
+    {
+      "name": "Forced task uncontrolled: mean_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.51757, 0.666133], estimate=0.589951"
+    },
+    {
+      "name": "Forced task uncontrolled: median_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.424582, 0.620235], estimate=0.524921"
+    },
+    {
+      "name": "Forced task uncontrolled: p90_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.96319, 1.39417], estimate=1.05992"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: finite values",
+      "status": "PASS",
+      "detail": "n=100"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: mean cost",
+      "status": "PASS",
+      "detail": "observed=0.161033476306, stored=0.161033476306, abs_diff=0"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: median cost",
+      "status": "PASS",
+      "detail": "observed=0.137744308803, stored=0.137744308803, abs_diff=0"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: p90 cost",
+      "status": "PASS",
+      "detail": "observed=0.2874916385, stored=0.2874916385, abs_diff=0"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: mean control effort",
+      "status": "PASS",
+      "detail": "observed=1.13882184946, stored=1.13882184946, abs_diff=0"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: failure rate",
+      "status": "PASS",
+      "detail": "observed=0, stored=0, abs_diff=0"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: mean_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.141027, 0.181211], estimate=0.161033"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: median_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.12017, 0.152631], estimate=0.137744"
+    },
+    {
+      "name": "Forced task pde_oracle_mpc: p90_cost_ci95 contains estimate",
+      "status": "PASS",
+      "detail": "interval=[0.232236, 0.340107], estimate=0.287492"
+    },
+    {
+      "name": "Forced task paired mean difference",
+      "status": "PASS",
+      "detail": "observed=-0.428917489303, stored=-0.428917489303, abs_diff=0"
+    },
+    {
+      "name": "Forced task paired p90 difference",
+      "status": "PASS",
+      "detail": "observed=-0.77242966977, stored=-0.77242966977, abs_diff=0"
+    },
+    {
+      "name": "Forced task fraction oracle better",
+      "status": "PASS",
+      "detail": "observed=1, stored=1, abs_diff=0"
+    },
+    {
+      "name": "Forced task standard-budget first-20 mean",
+      "status": "PASS",
+      "detail": "observed=0.166242967407, stored=0.166242967407, abs_diff=2.78e-17"
+    },
+    {
+      "name": "Forced task high-budget first-20 mean",
+      "status": "PASS",
+      "detail": "observed=0.154664679239, stored=0.154664679239, abs_diff=2.78e-17"
+    },
+    {
       "name": "Burgers backbone is FNO",
       "status": "PASS",
       "detail": "fno"

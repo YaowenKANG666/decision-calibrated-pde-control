@@ -9,6 +9,31 @@ It checks internal numerical consistency; it is not a cryptographic provenance p
 
 | Check | Status | Detail |
 |---|---|---|
+| Forced task independent-case row count | PASS | rows=100, stored=100 |
+| Forced task case identifiers are unique | PASS | unique_cases=100 |
+| Forced task uncontrolled: finite values | PASS | n=100 |
+| Forced task uncontrolled: mean cost | PASS | observed=0.589950965608, stored=0.589950965608, abs_diff=0 |
+| Forced task uncontrolled: median cost | PASS | observed=0.524921133919, stored=0.524921133919, abs_diff=0 |
+| Forced task uncontrolled: p90 cost | PASS | observed=1.05992130827, stored=1.05992130827, abs_diff=0 |
+| Forced task uncontrolled: mean control effort | PASS | observed=0, stored=0, abs_diff=0 |
+| Forced task uncontrolled: failure rate | PASS | observed=0, stored=0, abs_diff=0 |
+| Forced task uncontrolled: mean_cost_ci95 contains estimate | PASS | interval=[0.51757, 0.666133], estimate=0.589951 |
+| Forced task uncontrolled: median_cost_ci95 contains estimate | PASS | interval=[0.424582, 0.620235], estimate=0.524921 |
+| Forced task uncontrolled: p90_cost_ci95 contains estimate | PASS | interval=[0.96319, 1.39417], estimate=1.05992 |
+| Forced task pde_oracle_mpc: finite values | PASS | n=100 |
+| Forced task pde_oracle_mpc: mean cost | PASS | observed=0.161033476306, stored=0.161033476306, abs_diff=0 |
+| Forced task pde_oracle_mpc: median cost | PASS | observed=0.137744308803, stored=0.137744308803, abs_diff=0 |
+| Forced task pde_oracle_mpc: p90 cost | PASS | observed=0.2874916385, stored=0.2874916385, abs_diff=0 |
+| Forced task pde_oracle_mpc: mean control effort | PASS | observed=1.13882184946, stored=1.13882184946, abs_diff=0 |
+| Forced task pde_oracle_mpc: failure rate | PASS | observed=0, stored=0, abs_diff=0 |
+| Forced task pde_oracle_mpc: mean_cost_ci95 contains estimate | PASS | interval=[0.141027, 0.181211], estimate=0.161033 |
+| Forced task pde_oracle_mpc: median_cost_ci95 contains estimate | PASS | interval=[0.12017, 0.152631], estimate=0.137744 |
+| Forced task pde_oracle_mpc: p90_cost_ci95 contains estimate | PASS | interval=[0.232236, 0.340107], estimate=0.287492 |
+| Forced task paired mean difference | PASS | observed=-0.428917489303, stored=-0.428917489303, abs_diff=0 |
+| Forced task paired p90 difference | PASS | observed=-0.77242966977, stored=-0.77242966977, abs_diff=0 |
+| Forced task fraction oracle better | PASS | observed=1, stored=1, abs_diff=0 |
+| Forced task standard-budget first-20 mean | PASS | observed=0.166242967407, stored=0.166242967407, abs_diff=2.78e-17 |
+| Forced task high-budget first-20 mean | PASS | observed=0.154664679239, stored=0.154664679239, abs_diff=2.78e-17 |
 | Burgers backbone is FNO | PASS | fno |
 | FNO architecture recorded | PASS | {"layers": 4, "modes": 14, "width": 32} |
 | FNO pair parameter count is positive | PASS | parameters=240454 |
@@ -129,6 +154,10 @@ The implementation, manuscript, README, and stored metric key now use the RMSE l
 No numerical value was changed by this semantic correction.
 
 ## Scope
+
+The persistent-forcing task-validity gate contains 100 independently drawn
+physical cases and no learned model. It establishes that active control is
+useful before learned-controller comparisons are attempted.
 
 The Burgers controller table contains 24 matched actuator-gain cases from one
 trained FNO pair. The NS2D result also conditions on one trained FNO pair. These

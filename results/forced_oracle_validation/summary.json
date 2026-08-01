@@ -1,0 +1,116 @@
+{
+  "claim": "persistent-forcing task requires active control",
+  "oracle_definition": "MPC with direct numerical-PDE model access and finite-budget CEM",
+  "test_cases": 100,
+  "rollout_horizon": 20,
+  "physical_horizon": 0.5,
+  "test_seed": 27,
+  "bootstrap_replicates": 5000,
+  "plant_config": {
+    "grid_size": 48,
+    "control_dt": 0.025,
+    "solver_dt": 0.0005,
+    "actuator_centers": [
+      0.28,
+      0.72
+    ],
+    "actuator_width": 0.1,
+    "action_limit": 2.0,
+    "control_weight": 0.002,
+    "terminal_weight": 4.0,
+    "failure_threshold": 0.55
+  },
+  "cem_config": {
+    "horizon": 6,
+    "candidates": 64,
+    "elites": 8,
+    "iterations": 3,
+    "initial_std": 0.9
+  },
+  "test_distribution": {
+    "viscosity": [
+      0.008,
+      0.018
+    ],
+    "boundary_each": [
+      -0.03,
+      0.03
+    ],
+    "actuator_gain": [
+      0.65,
+      1.35
+    ],
+    "forcing_amplitude": [
+      0.4,
+      0.8
+    ],
+    "forcing_frequency": [
+      0.5,
+      1.5
+    ],
+    "forcing_phase": [
+      0.0,
+      6.283185307179586
+    ],
+    "initial_amplitude": [
+      0.03,
+      0.12
+    ]
+  },
+  "uncontrolled": {
+    "mean_cost": 0.5899509656083016,
+    "mean_cost_ci95": [
+      0.5175702768951089,
+      0.6661325295162039
+    ],
+    "median_cost": 0.5249211339187974,
+    "median_cost_ci95": [
+      0.42458246192069526,
+      0.6202352233767335
+    ],
+    "p90_cost": 1.0599213082700218,
+    "p90_cost_ci95": [
+      0.9631898833857956,
+      1.3941697796914678
+    ],
+    "failure_rate": 0.0,
+    "mean_control_effort": 0.0
+  },
+  "pde_oracle_mpc": {
+    "mean_cost": 0.1610334763057885,
+    "mean_cost_ci95": [
+      0.14102686738674125,
+      0.18121054013474885
+    ],
+    "median_cost": 0.13774430880340127,
+    "median_cost_ci95": [
+      0.120170228028686,
+      0.15263112764834427
+    ],
+    "p90_cost": 0.28749163850045495,
+    "p90_cost_ci95": [
+      0.2322364761724064,
+      0.3401071287090601
+    ],
+    "failure_rate": 0.0,
+    "mean_control_effort": 1.1388218494596705
+  },
+  "paired": {
+    "mean_difference": -0.4289174893025131,
+    "mean_difference_ci95": [
+      -0.4883371488317122,
+      -0.37018714925732304
+    ],
+    "p90_difference": -0.772429669769567,
+    "p90_difference_ci95": [
+      -1.0610250900756935,
+      -0.7166187649447234
+    ],
+    "fraction_oracle_better": 1.0
+  },
+  "limitations": [
+    "Oracle denotes access to the numerical transition model, not a globally optimal policy.",
+    "Finite-budget CEM can underestimate the benefit attainable with exact optimization.",
+    "This task-validation experiment precedes learned-FNO comparisons."
+  ]
+}

@@ -159,6 +159,114 @@ def audit_burgers(root: Path, audit: Audit) -> dict:
     return payload
 
 
+def audit_forced_task(root: Path, audit: Audit) -> dict:
+    result_root = root / "results/forced_oracle_validation"
+    summary = load_json(result_root / "summary.json")
+    rows = load_csv(result_root / "case_metrics.csv")
+    expected = int(summary["test_cases"])
+    audit.check(
+        "Forced task independent-case row count",
+        len(rows) == expected,
+        f"rows={len(rows)}, stored={expected}",
+    )
+    audit.check(
+        "Forced task case identifiers are unique",
+        len({row["case"] for row in rows}) == expected,
+        f"unique_cases={len({row['case'] for row in rows})}",
+    )
+
+    costs = {
+        "uncontrolled": np.asarray([float(row["uncontrolled_cost"]) for row in rows]),
+        "pde_oracle_mpc": np.asarray([float(row["oracle_cost"]) for row in rows]),
+    }
+    efforts = {
+        "uncontrolled": np.asarray([float(row["uncontrolled_effort"]) for row in rows]),
+        "pde_oracle_mpc": np.asarray([float(row["oracle_effort"]) for row in rows]),
+    }
+    failures = {
+        "uncontrolled": np.asarray([float(row["uncontrolled_failure"]) for row in rows]),
+        "pde_oracle_mpc": np.asarray([float(row["oracle_failure"]) for row in rows]),
+    }
+    for method in costs:
+        stored = summary[method]
+        audit.check(
+            f"Forced task {method}: finite values",
+            bool(np.isfinite(costs[method]).all() and np.isfinite(efforts[method]).all()),
+            f"n={costs[method].size}",
+        )
+        audit.close(
+            f"Forced task {method}: mean cost",
+            float(np.mean(costs[method])),
+            float(stored["mean_cost"]),
+        )
+        audit.close(
+            f"Forced task {method}: median cost",
+            float(np.median(costs[method])),
+            float(stored["median_cost"]),
+        )
+        audit.close(
+            f"Forced task {method}: p90 cost",
+            float(np.quantile(costs[method], 0.90)),
+            float(stored["p90_cost"]),
+        )
+        audit.close(
+            f"Forced task {method}: mean control effort",
+            float(np.mean(efforts[method])),
+            float(stored["mean_control_effort"]),
+        )
+        audit.close(
+            f"Forced task {method}: failure rate",
+            float(np.mean(failures[method])),
+            float(stored["failure_rate"]),
+        )
+        for interval_key, point_key in (
+            ("mean_cost_ci95", "mean_cost"),
+            ("median_cost_ci95", "median_cost"),
+            ("p90_cost_ci95", "p90_cost"),
+        ):
+            lower, upper = map(float, stored[interval_key])
+            point = float(stored[point_key])
+            audit.check(
+                f"Forced task {method}: {interval_key} contains estimate",
+                np.isfinite([lower, upper]).all() and lower <= point <= upper,
+                f"interval=[{lower:.6g}, {upper:.6g}], estimate={point:.6g}",
+            )
+
+    difference = costs["pde_oracle_mpc"] - costs["uncontrolled"]
+    stored_paired = summary["paired"]
+    audit.close(
+        "Forced task paired mean difference",
+        float(np.mean(difference)),
+        float(stored_paired["mean_difference"]),
+    )
+    audit.close(
+        "Forced task paired p90 difference",
+        float(np.quantile(costs["pde_oracle_mpc"], 0.90)
+              - np.quantile(costs["uncontrolled"], 0.90)),
+        float(stored_paired["p90_difference"]),
+    )
+    audit.close(
+        "Forced task fraction oracle better",
+        float(np.mean(difference < 0.0)),
+        float(stored_paired["fraction_oracle_better"]),
+    )
+
+    budget = load_json(result_root / "cem_budget_audit.json")
+    first_twenty = costs["pde_oracle_mpc"][: int(budget["comparison_cases"])]
+    high_budget = load_json(result_root / "cem_budget_high_summary.json")
+    audit.close(
+        "Forced task standard-budget first-20 mean",
+        float(np.mean(first_twenty)),
+        float(budget["standard_budget"]["mean_oracle_cost"]),
+    )
+    audit.close(
+        "Forced task high-budget first-20 mean",
+        float(high_budget["pde_oracle_mpc"]["mean_cost"]),
+        float(budget["high_budget"]["mean_oracle_cost"]),
+    )
+    return summary
+
+
 def audit_bounds(root: Path, audit: Audit) -> dict:
     result_root = root / "experiments/bound_comparison_reference"
     summary = load_json(result_root / "results/summary.json")
@@ -342,6 +450,10 @@ def render_markdown(report: dict) -> str:
             "",
             "## Scope",
             "",
+            "The persistent-forcing task-validity gate contains 100 independently drawn",
+            "physical cases and no learned model. It establishes that active control is",
+            "useful before learned-controller comparisons are attempted.",
+            "",
             "The Burgers controller table contains 24 matched actuator-gain cases from one",
             "trained FNO pair. The NS2D result also conditions on one trained FNO pair. These",
             "checks support internal consistency and mechanism-level interpretation, not",
@@ -365,6 +477,7 @@ def main() -> None:
     output = args.output_dir if args.output_dir.is_absolute() else root / args.output_dir
 
     audit = Audit()
+    audit_forced_task(root, audit)
     audit_burgers(root, audit)
     audit_bounds(root, audit)
     audit_value_scaling(root, audit)

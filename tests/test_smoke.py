@@ -9,6 +9,13 @@ from unoc.calibration import (
     trajectory_coverage_metrics,
 )
 from unoc.data import TrajectoryArrays
+from unoc.forced_control import (
+    ForcedBurgersCase,
+    ForcedBurgersConfig,
+    ForcedBurgersSolver,
+    OracleCEMConfig,
+    oracle_cem_action,
+)
 from unoc.models import PerturbationScaleWorldModel, build_model
 from unoc.mpc import _sequence_cost
 from unoc.pde import BurgersConfig, BurgersSolver
@@ -32,6 +39,54 @@ def test_solver_preserves_boundary_conditions() -> None:
     assert np.isfinite(next_state).all()
     assert next_state[0] == -0.1
     assert next_state[-1] == 0.08
+
+
+def test_forced_solver_preserves_boundaries_and_accepts_vector_actions() -> None:
+    solver = ForcedBurgersSolver(
+        ForcedBurgersConfig(grid_size=32, control_dt=0.01, solver_dt=0.0005)
+    )
+    case = ForcedBurgersCase(
+        viscosity=0.012,
+        left_boundary=-0.02,
+        right_boundary=0.03,
+        actuator_gain=1.1,
+        forcing_amplitude=0.6,
+        forcing_frequency=1.0,
+        forcing_phase=0.2,
+        initial_amplitude=0.05,
+        initial_seed=4,
+    )
+    state = solver.initial_state(case)
+    next_state = solver.step(state, np.array([-0.3, 0.2]), 0.0, case)
+    assert next_state.shape == state.shape
+    assert np.isfinite(next_state).all()
+    assert next_state[0] == case.left_boundary
+    assert next_state[-1] == case.right_boundary
+    assert np.allclose(solver.external_force(0.1, case)[[0, -1]], 0.0)
+
+
+def test_oracle_cem_action_is_reproducible_and_feasible() -> None:
+    solver = ForcedBurgersSolver(
+        ForcedBurgersConfig(grid_size=24, control_dt=0.01, solver_dt=0.0005)
+    )
+    case = ForcedBurgersCase(
+        viscosity=0.012,
+        left_boundary=0.0,
+        right_boundary=0.0,
+        actuator_gain=1.0,
+        forcing_amplitude=0.6,
+        forcing_frequency=1.0,
+        forcing_phase=0.0,
+        initial_amplitude=0.05,
+        initial_seed=7,
+    )
+    config = OracleCEMConfig(horizon=2, candidates=8, elites=2, iterations=2)
+    state = solver.initial_state(case)
+    first = oracle_cem_action(solver, state, 0.0, case, config, seed=11)
+    second = oracle_cem_action(solver, state, 0.0, case, config, seed=11)
+    assert np.allclose(first, second)
+    assert first.shape == (solver.action_dimension,)
+    assert np.max(np.abs(first)) <= solver.config.action_limit
 
 
 def test_all_world_models_return_mean_and_positive_scale() -> None:

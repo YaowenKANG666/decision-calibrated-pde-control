@@ -82,6 +82,8 @@ upper bound, or a robust-control certificate.
 
 ## Implemented benchmarks
 
+- A persistent-forcing Burgers task with two localized actuators and a
+  PDE-oracle task-validity gate.
 - Controlled one-dimensional viscous Burgers dynamics with an action channel.
 - Viscosity, boundary, initial-condition, actuator-gain, and compound shifts.
 - A residual FNO with four Fourier blocks and ResNet-style skip connections.
@@ -148,6 +150,32 @@ redistributed by this repository.
 
 ## Reproduce the experiments
 
+Before training a learned world model on the revised control task, verify that
+active control is useful:
+
+```bash
+dcurc-forced-oracle \
+  --cases 100 \
+  --rollout-horizon 20 \
+  --cem-horizon 6 \
+  --cem-candidates 64 \
+  --cem-elites 8 \
+  --cem-iterations 3 \
+  --seed 27 \
+  --output-dir results/forced_oracle_validation
+```
+
+This experiment solves
+
+$$
+u_t+u u_x=\nu u_{xx}+f_{\mathrm{ext}}(x,t)
++g_{\mathrm{act}}\sum_{k=1}^2a_{t,k}b_k(x)
+$$
+
+and compares zero control with MPC that queries the numerical PDE directly.
+The term “PDE-oracle” denotes model access, not a globally optimal policy;
+CEM remains a finite-budget approximate optimizer.
+
 A CPU-compatible smoke test is:
 
 ```bash
@@ -191,10 +219,34 @@ These are conditional, within-run ablations. They isolate mechanism but do not
 replace a multi-seed population study. Full settings are recorded in
 [`docs/EXPERIMENT_PROTOCOL.md`](docs/EXPERIMENT_PROTOCOL.md).
 
-## Reference results
+## Persistent-forcing task validity
 
-The main Burgers result uses one seed and 24 matched actuator-gain cases. Lower
-closed-loop cost is better.
+The revised task-validity gate uses 100 independently sampled joint-shift
+plants. Both controllers receive exactly the same initial field and physical
+parameters for each case. Confidence intervals use 5,000 paired or ordinary
+nonparametric bootstrap resamples, as appropriate.
+
+| Controller | Mean cost (95% CI) | Median cost | p90 cost (95% CI) |
+|---|---:|---:|---:|
+| Uncontrolled | 0.5900 (0.5176, 0.6661) | 0.5249 | 1.0599 (0.9632, 1.3942) |
+| PDE-oracle MPC | 0.1610 (0.1410, 0.1812) | 0.1377 | 0.2875 (0.2322, 0.3401) |
+
+The paired mean difference (oracle minus uncontrolled) was -0.4289, with a
+95% bootstrap interval of (-0.4883, -0.3702). Oracle MPC reduced cost in all
+100 matched cases. A higher CEM budget on the first 20 prespecified cases
+reduced the mean oracle cost from 0.1662 to 0.1547, so the task-validity
+conclusion did not depend on the lower planning budget.
+
+These results establish only that the revised plant is worth controlling.
+They precede, and do not substitute for, the multi-seed FNO, calibration-size,
+uncertainty-scale, and robust-control comparisons.
+
+## Legacy mechanism-level results
+
+The earlier Burgers study used one seed and a 24-point actuator-gain sweep.
+It is retained for mechanism debugging, but it is not treated as independent
+population evidence and will not be the primary result in a formal submission.
+Lower closed-loop cost is better.
 
 | Controller | Mean cost | Change from nominal | Empirical p90 | Change from nominal |
 |---|---:|---:|---:|---:|
@@ -249,11 +301,12 @@ uses a uniform error assumption; marginal conformal coverage does not imply it.
 
 ## Scientific status
 
-This repository is a research prototype. The current evidence supports a
-mechanism-level claim: calibrated field geometry can change robust-control
-decisions and their empirical tail cost. It does not establish universal
-controller superiority, global safety, grid-independent coverage, or a
-population-level effect across training seeds.
+This repository is a research prototype. The persistent-forcing experiment
+now establishes that the revised synthetic task benefits from active control.
+The previous learned-FNO evidence remains mechanism-level: calibrated field
+geometry can change robust-control decisions and empirical tail cost. It does
+not yet establish population-level controller superiority across training
+seeds, global safety, or grid-independent coverage.
 
 The current preprint is available at
 [`paper/decision_calibrated_robust_control.pdf`](paper/decision_calibrated_robust_control.pdf).

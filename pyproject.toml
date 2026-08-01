@@ -25,6 +25,7 @@ dcurc-experiment = "unoc.experiment:main"
 dcurc-value-gap = "unoc.value_gap:main"
 dcurc-bound-comparison = "unoc.bound_comparison:main"
 dcurc-ns2d = "unoc.ns2d_experiment:main"
+dcurc-forced-oracle = "unoc.forced_control:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

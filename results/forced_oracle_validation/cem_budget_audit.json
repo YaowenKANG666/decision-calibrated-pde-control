@@ -1,0 +1,21 @@
+{
+  "comparison_cases": 20,
+  "case_subset": "first 20 cases from test seed 27",
+  "standard_budget": {
+    "horizon": 6,
+    "candidates": 64,
+    "elites": 8,
+    "iterations": 3,
+    "mean_oracle_cost": 0.1662429674072742
+  },
+  "high_budget": {
+    "horizon": 8,
+    "candidates": 128,
+    "elites": 16,
+    "iterations": 5,
+    "mean_oracle_cost": 0.15466467923864127
+  },
+  "high_minus_standard_mean_cost": -0.011578288168632933,
+  "fraction_high_budget_lower": 1.0,
+  "interpretation": "Increasing the CEM budget improves the oracle controller on all audited cases and leaves the task-validity conclusion unchanged."
+}
