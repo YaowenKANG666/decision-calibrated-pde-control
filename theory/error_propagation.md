@@ -73,12 +73,13 @@ z^\star
 {\lVert\lambda\odot\sigma\rVert_{2,n}}.
 $$
 
-Thus a predictive, anisotropic dynamics ellipsoid becomes decision-effective
-by querying its support in the finite-horizon adjoint direction. No
+Thus a predictive, anisotropic dynamics ellipsoid becomes control-relevant
+when its support is queried in the finite-horizon adjoint direction. No
 direction-specific recalibration is required, so the conformal set and the
 MPC support use the same $q$.
 
-The nonlinear controller instead uses the rectangular product of these sets:
+The nonlinear controller instead selects a local perturbation at each state of
+the perturbed rollout:
 
 $$
 \min_{a_{0:H-1}}\max_{\lVert z_t\rVert_{2,n}\le q}
@@ -88,10 +89,13 @@ x_{t+1}=\widehat G_\theta(x_t,a_t)
 +\sigma_\theta(x_t,a_t)\odot z_t.
 $$
 
+Because $\sigma_\theta(x_t,a_t)$ changes with the perturbed state, the
+admissible trajectory set is not generally a fixed Cartesian product. It is a
+stagewise state-dependent approximation with no explicit temporal coupling.
 Projected gradient ascent gives a computable lower bound on the inner maximum,
-not a certificate that the global maximum was found. Also, marginal one-step
-conformal coverage does not imply that all $H$ rectangular sets contain the
-true transitions simultaneously.
+not a certificate that the global maximum was found. Marginal one-step
+conformal coverage does not imply simultaneous containment of all $H$
+transitions.
 
 ## Proposition 3: first-order robust objective and its remainder
 

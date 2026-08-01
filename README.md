@@ -1,10 +1,8 @@
-# Decision-Calibrated Robust PDE Control
+# Perturbation-Calibrated Dynamics Ambiguity Sets for Robust PDE Control
 
-**From FNO predictive uncertainty to decision-effective dynamics ambiguity sets**
-
-This repository studies one question: how can uncertainty from a Fourier
-Neural Operator (FNO) world model be converted into a dynamics ambiguity set
-that is useful for robust control?
+This repository studies how uncertainty from a Fourier Neural Operator (FNO)
+world model can be calibrated into a field-valued dynamics ambiguity set and
+used in robust PDE control.
 
 The contribution is not a new FNO block. The FNO supplies a differentiable
 one-step PDE world model. The research contribution is the interface from
@@ -60,6 +58,12 @@ $$
 Split conformal coverage, deterministic error propagation, and closed-loop
 performance are evaluated as separate claims. Marginal conformal coverage is
 not presented as a safety certificate for counterfactual MPC trajectories.
+
+For multi-step planning, the current implementation permits a separate local
+perturbation at each predicted state. Because the local scale changes with the
+perturbed state, this is a stagewise state-dependent uncertainty model, not a
+fixed Cartesian product. It does not model temporally correlated operator
+error, and one-step conformal coverage does not certify the resulting rollout.
 
 ## Implemented benchmarks
 

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If this research prototype is useful, please cite the software and accompanying preprint."
-title: "Decision-Calibrated Dynamics Ambiguity Sets for Robust PDE Control"
+title: "Perturbation-Calibrated Dynamics Ambiguity Sets for Robust PDE Control"
 type: software
 authors:
   - family-names: Kang

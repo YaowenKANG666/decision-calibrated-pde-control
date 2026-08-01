@@ -187,7 +187,7 @@ def _adversarial_robust_sequence_cost(
     iterations: int,
     step_size: float,
 ) -> torch.Tensor:
-    """Approximate the nonlinear rectangular-set inner maximum with PGD."""
+    """Approximate the nonlinear stagewise-set inner maximum with PGD."""
 
     count, horizon = sequences.shape
     grid = initial_state.shape[0]

@@ -1,4 +1,4 @@
-"""Create standalone decision-effectiveness figures from a Burgers metrics file."""
+"""Create standalone control-utility figures from a Burgers metrics file."""
 
 from __future__ import annotations
 

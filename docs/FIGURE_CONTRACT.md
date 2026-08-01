@@ -35,7 +35,7 @@ multi-panel composites are not used.
 
 ### Closed-loop tail-risk comparison
 
-- **Core conclusion:** uncertainty is decision-effective only if matched-case
+- **Core conclusion:** uncertainty is useful for control only if matched-case
   p90 cost improves relative to nominal MPC without a material mean-cost loss.
 - **Archetype:** single quantitative comparison with paired raw cases retained
   in source data.
