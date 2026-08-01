@@ -71,6 +71,15 @@ perturbed state, this is a stagewise state-dependent uncertainty model, not a
 fixed Cartesian product. It does not model temporally correlated operator
 error, and one-step conformal coverage does not certify the resulting rollout.
 
+The nonlinear adversarial query is also not a certified inner solve. With the
+released Burgers defaults, the adversary has $Hn=8\times64=512$ coordinates
+per fixed action sequence. The FNO composition and state-dependent scale make
+the rollout objective nonconvex. The implementation starts from zero, performs
+three projected gradient-ascent steps with step size $0.8$, and uses no random
+restarts. Projection guarantees feasibility, so the returned adversarial cost
+is a lower bound on the exact inner supremum. It is not a global optimum, an
+upper bound, or a robust-control certificate.
+
 ## Implemented benchmarks
 
 - Controlled one-dimensional viscous Burgers dynamics with an action channel.

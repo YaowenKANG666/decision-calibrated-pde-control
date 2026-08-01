@@ -97,6 +97,13 @@ not a certificate that the global maximum was found. Marginal one-step
 conformal coverage does not imply simultaneous containment of all $H$
 transitions.
 
+For the released Burgers configuration, the standardized adversary has
+$Hn=8\times64=512$ variables for each action sequence. It uses a single zero
+initialization, three ascent steps, step size $0.8$, and no random restarts.
+The FNO composition and state-dependent scale make the objective nonconvex, so
+these settings provide neither convergence evidence nor an upper bound on the
+unseen worst case.
+
 ## Proposition 3: first-order robust objective and its remainder
 
 Let $J_H(x^+)$ denote the remaining nominal horizon cost after a predicted

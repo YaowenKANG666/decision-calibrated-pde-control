@@ -187,7 +187,12 @@ def _adversarial_robust_sequence_cost(
     iterations: int,
     step_size: float,
 ) -> torch.Tensor:
-    """Approximate the nonlinear stagewise-set inner maximum with PGD."""
+    """Return a feasible PGD lower-bound estimate of the nonlinear inner maximum.
+
+    The autoregressive FNO rollout gives a high-dimensional nonconvex objective.
+    Finite-step, single-start ascent does not certify a global maximum or an
+    optimality gap.
+    """
 
     count, horizon = sequences.shape
     grid = initial_state.shape[0]

@@ -201,7 +201,13 @@ $$
 The implementation uses CEM for the outer action sequence and projected
 gradient ascent for the inner adversary. Projection is coordinate clipping for
 the max box and normalized-L2 projection for the ellipsoid. Finite-step PGD
-is an approximate inner maximum, not a global certificate.
+is an approximate inner maximum, not a global certificate. Under the released
+Burgers defaults, each fixed action sequence induces `H*n = 8*64 = 512`
+standardized perturbation variables. The search uses one zero start, three
+ascent steps, step size `0.8`, and no random restarts. Nonlinear FNO composition
+and the state-dependent scale make the objective nonconvex. The returned
+feasible objective is a lower bound on the exact inner supremum, with no
+certified optimality gap.
 
 The fast controller linearizes the finite-horizon objective and adds
 
