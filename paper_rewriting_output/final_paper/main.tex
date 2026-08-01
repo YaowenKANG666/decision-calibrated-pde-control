@@ -81,6 +81,12 @@ Conformal regions have already been combined with controller robustification
 \cite{srinivasan2026ood}. We therefore do not claim that conformal robust
 control is new. Our target is the geometry connecting a calibrated
 function-space dynamics set to the downstream finite-horizon objective.
+Unlike the online weighted-conformal constraint-tightening pipeline of
+\cite{chee2024conformal}, the present prototype uses an offline deployment
+audit, anisotropic function-space sets, and either adjoint support or nonlinear
+adversarial rollouts. We therefore do not inherit their time-series guarantee;
+our one-step and behavior-policy trajectory statements are proved separately
+under exchangeability.
 
 The proposed construction begins with a heteroscedastic predictive ellipsoid,
 calibrated on a small deployment audit. Robust MPC then solves an approximate
@@ -170,7 +176,10 @@ S_i=\normn{\frac{y_i-\mu_\theta(x_i,a_i)}
 {\sigma_\theta(x_i,a_i)}}.
 \]
 For target miscoverage \(\alpha\), let \(q\) be the empirical order statistic
-with rank \(\lceil(m+1)(1-\alpha)\rceil\), clipped at \(m\). The ambiguity set is
+with rank \(\lceil(m+1)(1-\alpha)\rceil\) in the audit scores augmented by an
+atom at \(+\infty\). Thus \(q=+\infty\) if the audit sample is too small for the
+requested finite-sample level; all experiments below use ranks within the
+observed audit scores. The ambiguity set is
 \begin{equation}
 \U_\theta(x,a)=
 \left\{
@@ -317,7 +326,8 @@ For a common open-loop action sequence and \(e_t=\normn{x_t-\widehat x_t}\),
 e_{t+1}\le L_Ge_t+\epsilon,\qquad
 e_h\le\epsilon\sum_{j=0}^{h-1}L_G^j.
 \]
-If the stage reward is \(L_r\)-Lipschitz and \(\gamma L_G<1\), then
+If the state-dependent stage reward is \(L_r\)-Lipschitz and
+\(\gamma L_G<1\), then, for the common open-loop action sequence,
 \[
 |V_{G_\star}-V_{\widehat G}|
 \le\frac{\gamma L_r\epsilon}
@@ -327,8 +337,9 @@ If the stage reward is \(L_r\)-Lipschitz and \(\gamma L_G<1\), then
 \begin{proposition}[Policy-transfer bound]
 Suppose every policy in the comparison class induces true and learned
 closed-loop maps sharing the same state Lipschitz bound \(L_G\), the uniform
-one-step error assumption holds over that class, and \(\widehat\pi\) maximizes
-value in the learned model. Then
+one-step error assumption holds over that class, and the induced closed-loop
+stage reward \(r_\pi(x)\) is uniformly \(L_r\)-Lipschitz. If
+\(\widehat\pi\) maximizes value in the learned model, then
 \[
 V_{G_\star}^{\pi^\star}-V_{G_\star}^{\widehat\pi}
 \le\frac{2\gamma L_r\epsilon}
@@ -376,15 +387,18 @@ coverage experiments test the separate conformal statements.
 The reproducible sharpness construction uses
 \(G(x)=L_Gx\), \(\widehat G(x)=L_Gx+\epsilon\), and the Lipschitz reward
 \(-L_r|x|\). Across six values each of \(\epsilon\) and \(\gamma\), the measured
-log--log slope is (1.000) in \(\epsilon\) and (2.000) in the effective
-horizon \((1-\gamma)^{-1}\), up to numerical precision.
+log--log slope is 1.000 in \(\epsilon\). After dividing the value gap by
+\(\gamma\epsilon\), its slope against the effective horizon
+\((1-\gamma)^{-1}\) is 2.000 up to numerical precision, exactly matching the
+closed form.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.54\linewidth]{../../experiments/reward_value_gap/figures/value_02_discount_scaling.pdf}
 \caption{A sharp fixed-policy witness attains the
-\(O(\epsilon/(1-\gamma)^2)\) rate. This verifies the exponent; it is not a
-learned-model performance result.}
+\(O(\epsilon/(1-\gamma)^2)\) rate. The plotted value gap is normalized by
+\(\gamma\epsilon\), making the predicted slope exactly two. This is a theorem
+sharpness check, not a learned-model performance result.}
 \label{fig:discount-scaling}
 \end{figure}
 
@@ -401,7 +415,8 @@ actuator gain \(g_{\rm act}\). The controller observes the state and boundary
 condition but not \(g_{\rm act}\).
 
 \paragraph{Two-dimensional uncertainty benchmark.}
-The official NeuralOperator Navier--Stokes benchmark contains $128\times128$
+The official NeuralOperator Navier--Stokes benchmark
+\cite{neuraloperator2024ns} contains $128\times128$
 input and output vorticity fields. We train a
 clean-label FNO and a perturbed-label FNO, then evaluate max-score simultaneous
 coverage on an independent split. Because this public dataset contains no
@@ -531,6 +546,15 @@ Relative L2 error & Max-score \(q_{0.90}\) & Simultaneous coverage & Band width\
 \end{tabular}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.52\linewidth]{../../experiments/ns2d_colab/figures/ns2d_10_coverage_width.pdf}
+\caption{Simultaneous coverage on the independent NS2D test split increases
+only by accepting wider coordinate bands. This is a function-space
+uncertainty stress test, not a controlled-system result.}
+\label{fig:ns2d-width}
+\end{figure}
+
 \subsection{Preliminary paired gain sweep}
 
 We next fixed the initial field, viscosity, and boundary conditions within
@@ -607,6 +631,9 @@ predeclared, exchangeable behavior-policy rollout. Neither statement certifies
 counterfactual action sequences chosen by MPC, nor does either imply the
 deterministic uniform-error assumption used by the value theorem. The robust
 objective is first order unless the curvature buffer is certified. The
+policy-transfer bound also assumes an exact learned-model optimizer, whereas
+the reported MPC uses a finite CEM search and is not certified by that theorem.
+The
 pointwise scale can be misspecified; a deep FNO ensemble and a learned
 uncertainty head are therefore required baselines \cite{mouli2024uq}. Finally,
 one-dimensional Burgers control is a mechanism test, not evidence of broad

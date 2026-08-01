@@ -957,6 +957,7 @@ def run_experiment(
         "analytic": {
             "epsilon_log_log_slope": epsilon_slope,
             "discount_horizon_log_log_slope": gamma_slope,
+            "discount_slope_response": "absolute_value_gap / (gamma * epsilon)",
             "max_simulation_relative_error": max(
                 abs(float(row["simulation_to_exact_ratio"]) - 1.0)
                 for row in analytic_rows

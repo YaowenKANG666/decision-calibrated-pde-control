@@ -177,7 +177,7 @@ R_{t+1}=L R_t+\rho(\widehat u_t,a_t).
 
 ## Proposition 5: discounted value error
 
-Suppose the stage reward is \(L_r\)-Lipschitz in state and
+Suppose the state-dependent stage reward is \(L_r\)-Lipschitz and
 \(\gamma L_G<1\). For any fixed open-loop action sequence,
 
 \[
@@ -192,9 +192,10 @@ L_r\sum_{t\geq0}\gamma^t e_t
 For a feedback-policy class, assume every true and learned closed-loop map
 \(x\mapsto G(x,\pi(x))\) and
 \(x\mapsto\widehat G(x,\pi(x))\) is \(L_G\)-Lipschitz and the one-step model
-error bound holds uniformly over the visited state-action set. Then the
-fixed-policy bound is uniform over that class. The standard two-model
-optimality decomposition gives
+error bound holds uniformly over the visited state-action set. Also assume the
+induced closed-loop reward \(r_\pi(x)\), including any action penalty through
+\(\pi(x)\), is uniformly \(L_r\)-Lipschitz. Then the fixed-policy bound is
+uniform over that class. The standard two-model optimality decomposition gives
 
 \[
 V_G^{\pi^\star}-V_G^{\widehat\pi}
@@ -269,6 +270,8 @@ experiments are in `experiments/reward_value_gap/`.
   certification requires the curvature term in Proposition 3.
 - Feedback policies require the stated common closed-loop Lipschitz condition;
   otherwise an additional policy-Lipschitz term appears.
+- The policy-transfer decomposition assumes an exact optimizer in the learned
+  model. Finite CEM search introduces a separate optimization-error term.
 - The theorem must specify the norm and invariant state-action set.
 
 These limitations are part of the research agenda rather than hidden
