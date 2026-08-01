@@ -164,8 +164,8 @@ closed-loop cost is better.
 | Controller | Mean cost | Change from nominal | Empirical p90 | Change from nominal |
 |---|---:|---:|---:|---:|
 | Nominal MPC | 0.5797 | - | 1.0752 | - |
-| Source-$L^2$ robust MPC | 0.5724 | -1.27% | 1.0250 | -4.66% |
-| Audit-$L^2$ robust MPC | 0.5686 | -1.92% | 0.9914 | -7.79% |
+| Source $L^2$ robust MPC | 0.5724 | -1.27% | 1.0250 | -4.66% |
+| Audit $L^2$ robust MPC | 0.5686 | -1.92% | 0.9914 | -7.79% |
 | Ellipsoid-adjoint MPC | 0.5747 | -0.88% | 1.0201 | -5.12% |
 | Box-adjoint MPC | 0.5688 | -1.89% | 0.9586 | -10.84% |
 | Adversarial ellipsoid MPC | 0.5764 | -0.58% | 1.0532 | -2.04% |

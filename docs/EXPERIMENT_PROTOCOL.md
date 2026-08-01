@@ -68,13 +68,13 @@ variants for each case and time step.
 | Variant | Calibration/set | Inner robust query |
 |---|---|---|
 | nominal MPC | none | none |
-| source-$L^2$ robust MPC | source $L^2$ tube | isotropic robust penalty |
-| audit-$L^2$ robust MPC | deployment-audit $L^2$ tube | isotropic robust penalty |
+| source $L^2$ robust MPC | source $L^2$ tube | isotropic robust penalty |
+| audit $L^2$ robust MPC | deployment-audit $L^2$ tube | isotropic robust penalty |
 | ellipsoid-adjoint MPC | audit ellipsoid | exact first-order support |
 | box-adjoint MPC | audit coordinate box | exact first-order support |
 | adversarial ellipsoid MPC | audit ellipsoid | projected-gradient rollout |
 
-The source-$L^2$ versus audit-$L^2$ pair isolates calibration access. The two
+The source $L^2$ versus audit $L^2$ pair isolates calibration access. The two
 adjoint rows isolate geometry at a common first-order interface. The
 ellipsoid-adjoint versus adversarial-ellipsoid pair isolates the inner query
 while holding the calibrated set fixed. Mean cost, empirical p90 cost, and mean
