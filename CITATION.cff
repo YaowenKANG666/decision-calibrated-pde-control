@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If this research prototype is useful, please cite the software and accompanying preprint."
+title: "Decision-Calibrated Dynamics Ambiguity Sets for Robust PDE Control"
+type: software
+authors:
+  - family-names: Kang
+    given-names: Yaowen
+version: 0.1.0
+date-released: 2026-07-31
+license: MIT
+abstract: >-
+  A notebook-first research prototype for converting predictive uncertainty
+  in function-valued world models into conformal dynamics ambiguity sets and
+  robust planning objectives under deployment shift.

@@ -18,9 +18,13 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
+ns2d = ["neuraloperator>=1.0.2"]
 
 [project.scripts]
 dcurc-experiment = "unoc.experiment:main"
+dcurc-value-gap = "unoc.value_gap:main"
+dcurc-bound-comparison = "unoc.bound_comparison:main"
+dcurc-ns2d = "unoc.ns2d_experiment:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

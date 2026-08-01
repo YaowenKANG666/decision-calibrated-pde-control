@@ -51,9 +51,85 @@ class TransitionArrays:
         )
 
     @classmethod
-    def load(cls, path: Path) -> "TransitionArrays":
+    def load(cls, path: Path) -> TransitionArrays:
         with np.load(path) as data:
             return cls(*(data[key] for key in ("state", "action", "viscosity", "boundary", "next_state")))
+
+    def with_perturbed_targets(
+        self,
+        noise_multiplier: float,
+        seed: int,
+    ) -> TransitionArrays:
+        """Return the same inputs with Gaussian-perturbed training labels."""
+
+        if noise_multiplier <= 0.0:
+            raise ValueError("noise_multiplier must be positive")
+        rng = np.random.default_rng(seed)
+        noise_scale = noise_multiplier * float(np.std(self.next_state))
+        noise = rng.normal(0.0, noise_scale, self.next_state.shape).astype(np.float32)
+        perturbed = self.next_state.astype(np.float32, copy=True) + noise
+        # Boundary values are known exactly and projected by the model, so
+        # perturbing them would create artificial irreducible uncertainty.
+        perturbed[:, 0] = self.boundary[:, 0]
+        perturbed[:, -1] = self.boundary[:, 1]
+        return TransitionArrays(
+            self.state,
+            self.action,
+            self.viscosity,
+            self.boundary,
+            perturbed,
+        )
+
+
+@dataclass(frozen=True)
+class TrajectoryArrays:
+    state: np.ndarray
+    action: np.ndarray
+    viscosity: np.ndarray
+    boundary: np.ndarray
+
+
+def generate_trajectories(
+    solver: BurgersSolver,
+    size: int,
+    horizon: int,
+    regime: Regime,
+    seed: int,
+) -> TrajectoryArrays:
+    """Generate behavior-policy trajectories for horizon-level calibration."""
+
+    if horizon < 1:
+        raise ValueError("horizon must be positive")
+    rng = np.random.default_rng(seed)
+    n = solver.config.grid_size
+    states = np.empty((size, horizon + 1, n), dtype=np.float32)
+    actions = rng.uniform(
+        -solver.config.action_limit,
+        solver.config.action_limit,
+        (size, horizon),
+    ).astype(np.float32)
+    viscosities = rng.uniform(*regime.viscosity, size).astype(np.float32)
+    boundaries = rng.uniform(*regime.boundary, (size, 2)).astype(np.float32)
+    actuator_gains = rng.uniform(*regime.actuator_gain, size)
+    for sample in range(size):
+        state = solver.random_state(
+            rng,
+            float(boundaries[sample, 0]),
+            float(boundaries[sample, 1]),
+            regime.amplitude,
+        )
+        states[sample, 0] = state
+        for step in range(horizon):
+            state = solver.step(
+                state,
+                float(actions[sample, step]),
+                float(viscosities[sample]),
+                float(boundaries[sample, 0]),
+                float(boundaries[sample, 1]),
+                float(actuator_gains[sample]),
+            )
+            states[sample, step + 1] = state
+    return TrajectoryArrays(states, actions, viscosities, boundaries)
 
 
 def generate_transitions(

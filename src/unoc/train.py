@@ -15,6 +15,7 @@ class TrainConfig:
     weight_decay: float = 1e-5
     scale_floor: float = 1e-4
     uncertainty_quantile: float = 0.90
+    uncertainty_weight: float = 0.50
 
 
 def probabilistic_loss(
@@ -23,6 +24,7 @@ def probabilistic_loss(
     target: torch.Tensor,
     scale_floor: float,
     uncertainty_quantile: float = 0.90,
+    uncertainty_weight: float = 0.50,
 ) -> torch.Tensor:
     scale = scale.clamp_min(scale_floor)
     error = target - mean
@@ -35,7 +37,7 @@ def probabilistic_loss(
         (uncertainty_quantile - 1.0) * quantile_residual,
     ).mean()
     normalized_pinball = pinball / target.detach().abs().mean().clamp_min(1e-3)
-    return relative + 0.50 * normalized_pinball
+    return relative + uncertainty_weight * normalized_pinball
 
 
 def train_model(
@@ -68,6 +70,7 @@ def train_model(
                 target,
                 config.scale_floor,
                 config.uncertainty_quantile,
+                config.uncertainty_weight,
             )
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -88,6 +91,7 @@ def train_model(
                     target,
                     config.scale_floor,
                     config.uncertainty_quantile,
+                    config.uncertainty_weight,
                 )
                 validation_total += float(loss) * state.shape[0]
         train_loss = train_total / len(train_loader.dataset)

@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 
 def model_inputs(
@@ -245,6 +246,71 @@ class MixtureOperatorWorldModel(nn.Module):
         return mean, scale
 
 
+class PerturbationScaleWorldModel(nn.Module):
+    """Base prediction with a scale from label-perturbation disagreement.
+
+    Both operators are trained on the same proper training inputs. The second
+    operator sees Gaussian-perturbed labels. Their smoothed pointwise
+    disagreement is a data-efficient local uncertainty proxy; split conformal
+    calibration, rather than the raw disagreement, supplies validity.
+    """
+
+    def __init__(
+        self,
+        base_model: nn.Module,
+        perturbed_model: nn.Module,
+        smoothing_window: int = 5,
+        scale_floor: float = 1e-4,
+    ):
+        super().__init__()
+        if smoothing_window < 1 or smoothing_window % 2 == 0:
+            raise ValueError("smoothing_window must be a positive odd integer")
+        self.kind = f"{getattr(base_model, 'kind', 'operator')}_perturbation"
+        self.base_model = base_model
+        self.perturbed_model = perturbed_model
+        self.smoothing_window = smoothing_window
+        self.register_buffer("scale_floor", torch.tensor(float(scale_floor)))
+
+    def raw_scale(
+        self,
+        state: torch.Tensor,
+        action: torch.Tensor,
+        viscosity: torch.Tensor,
+        boundary: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        base_mean, _ = self.base_model(state, action, viscosity, boundary)
+        perturbed_mean, _ = self.perturbed_model(state, action, viscosity, boundary)
+        disagreement = (base_mean - perturbed_mean).abs()
+        if self.smoothing_window > 1:
+            padding = self.smoothing_window // 2
+            padded = F.pad(
+                disagreement[:, None, :],
+                (padding, padding),
+                mode="replicate",
+            )
+            disagreement = F.avg_pool1d(
+                padded,
+                kernel_size=self.smoothing_window,
+                stride=1,
+            )[:, 0]
+        return base_mean, disagreement
+
+    def set_scale_floor(self, value: float) -> None:
+        if value <= 0.0:
+            raise ValueError("scale floor must be positive")
+        self.scale_floor.fill_(float(value))
+
+    def forward(
+        self,
+        state: torch.Tensor,
+        action: torch.Tensor,
+        viscosity: torch.Tensor,
+        boundary: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        mean, disagreement = self.raw_scale(state, action, viscosity, boundary)
+        return mean, disagreement.clamp_min(self.scale_floor.to(disagreement))
+
+
 def build_model(kind: str, width: int = 32, modes: int = 12, layers: int = 4) -> nn.Module:
     if kind == "moe":
         return MixtureOperatorWorldModel(width=max(16, width * 3 // 4), modes=modes, layers=layers)
@@ -253,3 +319,35 @@ def build_model(kind: str, width: int = 32, modes: int = 12, layers: int = 4) ->
 
 def count_parameters(model: nn.Module) -> int:
     return sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+
+
+def load_perturbation_world_model(
+    checkpoint: str | Path,
+    device: torch.device | str = "cpu",
+) -> tuple[PerturbationScaleWorldModel, dict[str, object]]:
+    """Reconstruct a saved two-operator world model from its metadata.
+
+    Checkpoints produced before architecture metadata was introduced are
+    interpreted as the documented quick FNO configuration.
+    """
+
+    device = torch.device(device)
+    payload = torch.load(Path(checkpoint), map_location=device, weights_only=False)
+    model_kind = str(payload.get("model_kind", "fno"))
+    architecture = dict(
+        payload.get("architecture", {"width": 20, "modes": 10, "layers": 3})
+    )
+    uncertainty = dict(payload.get("uncertainty", {}))
+    smoothing_window = round(float(uncertainty.get("smoothing_window", 5)))
+    scale_floor = float(uncertainty.get("scale_floor", 1e-4))
+    base = build_model(model_kind, **architecture).to(device)
+    perturbed = build_model(model_kind, **architecture).to(device)
+    model = PerturbationScaleWorldModel(
+        base,
+        perturbed,
+        smoothing_window=smoothing_window,
+        scale_floor=scale_floor,
+    ).to(device)
+    model.load_state_dict(payload["state_dict"])
+    model.eval()
+    return model, payload

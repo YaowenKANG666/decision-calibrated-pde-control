@@ -1,7 +1,7 @@
 \documentclass[10pt]{article}
 \usepackage[margin=0.82in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools,bm}
-\usepackage{booktabs,tabularx,microtype}
+\usepackage{booktabs,tabularx,microtype,graphicx}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{xcolor}
 \usepackage[colorlinks=true,allcolors=blue!55!black]{hyperref}
@@ -31,17 +31,20 @@ Decision-Effective Dynamics Ambiguity Sets}\\
 Learned dynamics can be calibrated in a predictive norm yet still induce poor
 control when errors align with sensitive cost-to-go directions. We ask how
 predictive uncertainty can become a decision-effective dynamics ambiguity set.
-A function-valued world model outputs a mean and pointwise scale; a small
-deployment audit conformalizes the resulting anisotropic ellipsoid. Projected
-gradient ascent over this set gives a nonlinear adversarial controller, while
-its closed-form support in the finite-horizon adjoint direction gives a fast
+A base world model and a label-perturbed replica output a mean and a smoothed
+disagreement scale; a small deployment audit conformalizes the resulting
+anisotropic ellipsoid or simultaneous coordinate box. Projected gradient
+ascent over this set gives a nonlinear adversarial controller, while its
+closed-form support in the finite-horizon adjoint direction gives a fast
 first-order approximation. We establish marginal one-step coverage, derive the
 exact support and linearization remainder, and state rollout and discounted
-value-error bounds under Lipschitz assumptions. Controlled viscous Burgers
-dynamics test viscosity, boundary, and latent actuator-gain shifts. In a
-preliminary three-seed paired gain sweep, adversarial MPC reduced empirical
-90th-percentile cost in every seed by \(1.57\%\)--\(3.68\%\); the mean relative
-change in average cost across seeds was \(+0.05\%\).
+value-error bounds under Lipschitz assumptions. A sharp scalar witness verifies
+linear scaling in one-step error and quadratic scaling in the effective
+discount horizon. Controlled viscous Burgers dynamics test viscosity,
+boundary, and latent actuator-gain shifts; the official two-dimensional
+Navier--Stokes benchmark is reserved for function-valued uncertainty because
+it has no control channel. The current experiments are mechanism evidence,
+not a population-level control claim.
 \end{abstract}
 
 \section{Introduction}
@@ -136,9 +139,17 @@ The world model outputs
 \sigma_\theta(x,a)\in\R_{>0}^n.
 \]
 Our prototype uses residual operator blocks and predicts
-\(\mu_\theta(x,a)=x+\delta_\theta(x,a)\). The scale head is trained by a
-pointwise quantile loss on detached absolute residuals, preventing the mean
-model from increasing its error merely to simplify uncertainty fitting.
+\(\mu_\theta(x,a)=x+\delta_\theta(x,a)\). A second operator has the same
+architecture and proper-training inputs but is trained once on labels perturbed
+by fixed Gaussian noise. If its mean is \(\widetilde\mu_\theta\), the raw scale
+is a spatially smoothed disagreement
+\[
+\sigma_\theta(x,a)=\mathsf{Smooth}
+\bigl(|\mu_\theta(x,a)-\widetilde\mu_\theta(x,a)|\bigr)\vee\sigma_{\min}.
+\]
+This scale is not itself a confidence interval. It only localizes where the
+world model may be inaccurate; the audit quantile supplies calibration. The
+proper-training, validation, audit, and test samples are kept disjoint.
 
 \subsection{Deployment-audit conformalization}
 
@@ -159,6 +170,18 @@ with rank \(\lceil(m+1)(1-\alpha)\rceil\), clipped at \(m\). The ambiguity set i
 \label{eq:set}
 \end{equation}
 
+For simultaneous coordinate coverage we additionally use
+\[
+S_i^{\max}=\max_j
+\frac{|y_{ij}-\mu_{\theta,j}(x_i,a_i)|}{\sigma_{\theta,j}(x_i,a_i)},
+\qquad
+\U_\infty(x,a)=\{\mu_\theta+\Delta:
+|\Delta_j|\le q_{\max}\sigma_{\theta,j}\ \forall j\}.
+\]
+The corresponding conformal event covers the full discretized output field for
+one random transition. It still does not imply simultaneous trajectory
+coverage.
+
 \begin{proposition}[Marginal one-step coverage]
 Conditional on the trained model, if the audit examples and a new deployment
 example are exchangeable, then
@@ -171,6 +194,29 @@ The \(m\) audit scores and the new score are exchangeable. The rank of the new
 score is therefore uniform up to ties; the conformal order statistic gives the
 stated lower bound.
 \end{proof}
+
+For a fixed horizon \(H\) and a predeclared rollout procedure, define the
+trajectory score
+\[
+S_i^{\mathrm{traj}}
+=\max_{0\le t<H}\max_{1\le j\le n}
+\frac{|x_{i,t+1,j}-\widehat x_{i,t+1,j}|}
+{\sigma_{\theta,j}(\widehat x_{i,t},a_{i,t})}.
+\]
+Calibrating this score on independent deployment trajectories gives a distinct
+trajectory band, rather than pretending that repeated one-step marginal
+coverage is simultaneous coverage.
+
+\begin{proposition}[Marginal trajectory coverage]
+Conditional on the trained world model and rollout procedure, if the audit
+trajectories and a new length-\(H\) deployment trajectory are exchangeable,
+then the split-conformal order statistic of \(S_i^{\mathrm{traj}}\) covers all
+times and coordinates of the new rollout with probability at least
+\(1-\alpha\).
+\end{proposition}
+The proposition is distribution-specific: in our experiment the actions come
+from the behavior policy used to generate the trajectory split. It therefore
+does not certify counterfactual action sequences selected by MPC.
 
 \section{Decision-effective robust MPC}
 
@@ -267,19 +313,60 @@ If the stage reward is \(L_r\)-Lipschitz and \(\gamma L_G<1\), then
 \le\frac{\gamma L_r\epsilon}
 {(1-\gamma)(1-\gamma L_G)}.
 \]
-If every policy in the comparison class induces true and learned closed-loop
-maps sharing the same Lipschitz bound, a two-model optimality decomposition
-gives
+
+\begin{proposition}[Policy-transfer bound]
+Suppose every policy in the comparison class induces true and learned
+closed-loop maps sharing the same state Lipschitz bound \(L_G\), the uniform
+one-step error assumption holds over that class, and \(\widehat\pi\) maximizes
+value in the learned model. Then
 \[
 V_{G_\star}^{\pi^\star}-V_{G_\star}^{\widehat\pi}
 \le\frac{2\gamma L_r\epsilon}
 {(1-\gamma)(1-\gamma L_G)}.
 \]
+\end{proposition}
+\begin{proof}
+Let
+\(
+B=\gamma L_r\epsilon/
+\{(1-\gamma)(1-\gamma L_G)\}.
+\)
+The fixed-policy argument above holds uniformly, so
+\[
+\begin{aligned}
+V_{G_\star}^{\pi^\star}-V_{G_\star}^{\widehat\pi}
+={}&
+\bigl(V_{G_\star}^{\pi^\star}-V_{\widehat G}^{\pi^\star}\bigr)
++\bigl(V_{\widehat G}^{\pi^\star}
+-V_{\widehat G}^{\widehat\pi}\bigr)
++\bigl(V_{\widehat G}^{\widehat\pi}
+-V_{G_\star}^{\widehat\pi}\bigr)\\
+\le{}&B+0+B.
+\end{aligned}
+\]
+The middle term is nonpositive by optimality of \(\widehat\pi\) in
+\(\widehat G\).
+\end{proof}
 For \(L_G\le1\), this has the desired
 \(O(\epsilon/(1-\gamma)^2)\) dependence. These are deterministic uniform-error
 bounds; marginal conformal coverage alone does not imply their assumptions.
 Related Lipschitz model-based bounds are developed in
 \cite{asadi2018lipschitz}.
+
+The reproducible sharpness construction uses
+\(G(x)=L_Gx\), \(\widehat G(x)=L_Gx+\epsilon\), and the Lipschitz reward
+\(-L_r|x|\). Across six values each of \(\epsilon\) and \(\gamma\), the measured
+log--log slope is (1.000) in \(\epsilon\) and (2.000) in the effective
+horizon \((1-\gamma)^{-1}\), up to numerical precision.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.54\linewidth]{../../experiments/reward_value_gap/figures/value_02_discount_scaling.pdf}
+\caption{A sharp fixed-policy witness attains the
+\(O(\epsilon/(1-\gamma)^2)\) rate. This verifies the exponent; it is not a
+learned-model performance result.}
+\label{fig:discount-scaling}
+\end{figure}
 
 \section{Experimental design}
 
@@ -293,6 +380,14 @@ viscosity, boundary values, initial-condition amplitude, and the latent
 actuator gain \(g_{\rm act}\). The controller observes the state and boundary
 condition but not \(g_{\rm act}\).
 
+\paragraph{Two-dimensional uncertainty benchmark.}
+The official NeuralOperator Navier--Stokes dataset contains $128\times128$
+input and output vorticity fields at Reynolds number 500. We train a
+clean-label FNO and a perturbed-label FNO, then evaluate max-score simultaneous
+coverage on an independent split. Because this public dataset contains no
+action variable, it tests function-valued uncertainty calibration only and
+cannot support a closed-loop control claim.
+
 \paragraph{Baselines.}
 All methods share one trained residual FNO:
 (i) uncontrolled, (ii) nominal MPC, (iii) an L2 tube calibrated on source
@@ -305,9 +400,10 @@ access to deployment data.
 \paragraph{Metrics.}
 We report one-step set coverage, radius--error association, mean and median
 closed-loop cost, 90th-percentile and worst-case cost, paired seed-level
-differences, and action magnitude. A positive result requires that the proposed
-method improve at least a predeclared tail-risk metric without a material
-increase in mean cost. Model RMSE alone cannot establish the claim.
+differences, action magnitude, and max-over-time-and-coordinate trajectory
+coverage under the held-out behavior policy. A positive result requires that
+the proposed method improve at least a predeclared tail-risk metric without a
+material increase in mean cost. Model RMSE alone cannot establish the claim.
 
 \subsection{Preliminary diagnostic: why coverage is insufficient}
 
@@ -319,6 +415,72 @@ cost. This small smoke test is not a final comparison. It serves as a
 falsifying diagnostic: restoring predictive coverage did not by itself produce
 a useful decision. Quantitative claims remain preliminary until the paired
 study includes substantially more initial states.
+
+\subsection{Expanded controlled-Burgers evaluation}
+
+We trained the two residual FNOs for 60 epochs and evaluated 24 matched
+closed-loop cases of length 20 under the combined parameter, boundary,
+initial-condition, and hidden-actuator shift. The final perturbed-FNO
+validation MSE was \(9.87\times10^{-5}\).
+\Cref{tab:expanded-coverage,tab:expanded-control} separate the predictive and
+decision-facing conclusions. Source-calibrated L2 coverage
+fell to 0.741 under combined shift. Deployment-audit calibration restored the
+ellipsoid and simultaneous box to 0.906 function-space coverage. The box has
+the strongest projected-decision coverage, but also the largest mean support;
+coverage is therefore not interpreted as tightness.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Combined-shift predictive results for the full seed-27 run. Decision
+coverage tests the residual projected onto the stage-cost direction; support
+is the corresponding ambiguity-set half-width.}
+\label{tab:expanded-coverage}
+\begin{tabular}{lrrr}
+\toprule
+Set & Function coverage & Decision coverage & Mean support\\
+\midrule
+ID L2 & 0.741 & 0.820 & 0.00650\\
+Audit L2 & 0.884 & 0.934 & 0.01072\\
+Audit ellipsoid & 0.906 & 0.986 & 0.02012\\
+Audit simultaneous box & 0.906 & 1.000 & 0.04422\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Relative to nominal MPC, the simultaneous-box adjoint controller reduced mean
+cost by 1.89\% and empirical \(p90\) cost by 10.84\%; the audit-L2 controller
+reduced them by 1.92\% and 7.79\%, respectively. The ellipsoidal adjoint and
+nonlinear adversarial controllers were less effective in this run. Thus the
+result supports a geometry-dependent control benefit, not universal dominance
+of a particular robust solver.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Closed-loop cost on 24 matched combined-shift cases. Percentages are
+relative to nominal MPC; lower is better.}
+\label{tab:expanded-control}
+\begin{tabular}{lrrrr}
+\toprule
+Controller & Mean & Mean change & \(p90\) & \(p90\) change\\
+\midrule
+Nominal MPC & 0.5797 & -- & 1.0752 & --\\
+ID-L2 robust MPC & 0.5724 & \(-1.27\%\) & 1.0250 & \(-4.66\%\)\\
+Audit-L2 robust MPC & 0.5686 & \(-1.92\%\) & 0.9914 & \(-7.79\%\)\\
+Ellipsoid-adjoint MPC & 0.5747 & \(-0.88\%\) & 1.0201 & \(-5.12\%\)\\
+Box-adjoint MPC & 0.5688 & \(-1.89\%\) & 0.9586 & \(-10.84\%\)\\
+Adversarial MPC & 0.5764 & \(-0.58\%\) & 1.0532 & \(-2.04\%\)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The separately calibrated max-over-time-and-coordinate band attained 0.88
+empirical coverage on held-out length-10 behavior-policy trajectories, versus
+a nominal target of 0.90. This finite test proportion is reported rather than
+rounded into a guarantee. More importantly, the trajectory statement applies
+only to exchangeable behavior-policy rollouts and does not certify the
+counterfactual action sequences searched by MPC.
 
 \subsection{Preliminary paired gain sweep}
 
@@ -353,17 +515,52 @@ calculation, the audit-calibrated L2 tube improves \(p90\) by \(1.74\%\).
 This supports the mechanism but not a population claim: each seed contains
 only five paired gains, and the nonlinear inner maximization is approximate.
 
+\subsection{Independent value-bound comparison}
+
+We compare four discounted-value bounds on disjoint calibration and test
+trajectories: a global maximum-error recursion, a state-dependent local
+recursion, adjoint support of the anisotropic set, and adjoint support plus an
+audit-calibrated quadratic feature. All four raw constructions are finally
+scaled on 60 calibration trajectories to the same 90\% value-level target
+before evaluation on 160 independent test trajectories, with horizon 20 and
+\(\gamma=0.95\). The local recursion has the smallest mean bound, 0.0870, at
+0.944 empirical coverage. Adjoint support is not tighter in this experiment:
+its mean bound is 0.2035 at 0.925 coverage. The audit-fitted curvature
+coefficient is zero, making the last two mean bounds identical; no curvature
+benefit is claimed. This negative result is important: decision weighting can
+improve a controller without automatically yielding a smaller scalar value
+certificate.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Independent-test comparison at a matched 90\% calibration target.
+Utilization is observed value gap divided by the reported bound.}
+\label{tab:bounds}
+\begin{tabular}{lrrrrr}
+\toprule
+Method & Coverage & Mean bound & Median $\eta$ & p90 $\eta$ & Max $\eta$\\
+\midrule
+Global maximum & 0.938 & 0.0987 & 0.210 & 0.688 & 3.919\\
+Local recursion & 0.944 & 0.0870 & 0.322 & 0.788 & 2.190\\
+Adjoint support & 0.925 & 0.2035 & 0.265 & 0.854 & 1.766\\
+Adjoint + curvature & 0.925 & 0.2035 & 0.265 & 0.854 & 1.766\\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Limitations and planned stress tests}
 
 Split conformal validity requires exchangeability between the audit and target
 deployment examples. The guarantee is marginal and one-step; it is not a
 simultaneous trajectory guarantee. The robust objective is first order unless
 the curvature buffer is certified. The pointwise scale can be misspecified; a
-deep FNO ensemble is therefore a required uncertainty baseline
+deep FNO ensemble and a learned uncertainty head are therefore required baselines
 \cite{mouli2024uq}. Finally, one-dimensional Burgers control is a mechanism
-test, not evidence of broad PDE-control safety. Planned stress tests include
+test, not evidence of broad PDE-control safety, while public uncontrolled
+Navier--Stokes pairs do not close that gap. Planned stress tests include
 audit-size sweeps, shift-severity sweeps, adversarial actuator degradation,
-paired random seeds, and a second advection--diffusion system.
+paired random seeds, and an action-conditioned two-dimensional system.
 
 \section{Conclusion}
 

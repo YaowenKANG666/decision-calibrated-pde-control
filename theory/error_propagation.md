@@ -21,7 +21,8 @@ S_i=
 \]
 
 For \(m\) audit points, take the order statistic with rank
-\(k=\lceil(m+1)(1-\alpha)\rceil\), clipped at \(m\), and call it \(q\).
+\(k=\lceil(m+1)(1-\alpha)\rceil\), using the usual atom at \(+\infty\) if
+\(k>m\), and call it \(q\).
 If the audit points and a new deployment point are exchangeable conditional
 on the trained model, the standard split-conformal rank argument gives
 
@@ -43,6 +44,13 @@ where
 
 This is marginal one-step coverage on the audited deployment distribution. It
 does not imply coverage under an arbitrary further shift.
+
+For a fixed horizon and predeclared rollout procedure, a separate
+max-over-time-and-coordinate score can instead be conformalized on independent
+trajectories. The same rank argument then gives marginal coverage of the whole
+random rollout. This statement is specific to the audited trajectory
+distribution; behavior-policy trajectories do not certify counterfactual MPC
+action sequences.
 
 ## Proposition 2: exact decision support of the ambiguity set
 
@@ -200,11 +208,56 @@ V_G^{\pi^\star}-V_G^{\widehat\pi}
 
 which has the requested \(O(\epsilon/(1-\gamma)^2)\) form.
 
+### Sharpness witness and reward experiment
+
+The squared effective-horizon dependence is attainable, rather than only an
+artifact of two loose inequalities. Consider the scalar true and learned
+dynamics
+
+\[
+G(x)=L_Gx,
+\qquad
+\widehat G(x)=L_Gx+\epsilon,
+\qquad x_0=0,
+\]
+
+with the \(L_r\)-Lipschitz reward \(r(x)=-L_r|x|\). The true trajectory stays
+at zero, while
+
+\[
+\widehat x_t
+=\epsilon\sum_{k=0}^{t-1}L_G^k.
+\]
+
+Consequently,
+
+\[
+|V_G-V_{\widehat G}|
+=L_r\sum_{t\ge0}\gamma^t|\widehat x_t|
+=\frac{\gamma L_r\epsilon}
+{(1-\gamma)(1-\gamma L_G)}.
+\]
+
+For \(L_G=1\), equality becomes
+
+\[
+|V_G-V_{\widehat G}|
+=\frac{\gamma L_r\epsilon}{(1-\gamma)^2}.
+\]
+
+Thus the fixed-policy rate is sharp. The coefficient two for the regret of a
+policy optimized in the learned model comes from comparing the two optimal
+values through the uniform fixed-policy bound; this witness does not assert
+that the factor two is always attained. The reproducible analytic and Burgers
+experiments are in `experiments/reward_value_gap/`.
+
 ## Important limitations
 
 - Split conformal calibration provides marginal, not uniform, one-step
-  coverage. Turning it into a trajectory-level guarantee requires simultaneous
-  calibration, a union bound, or sequential confidence methods.
+  coverage. The implemented trajectory max-score gives a distinct marginal
+  whole-rollout guarantee only for exchangeable behavior-policy trajectories;
+  arbitrary adaptive MPC trajectories require sequential or policy-aware
+  methods.
 - The empirical 95th-percentile local Lipschitz estimate used by the code is a
   planning heuristic, not a certified global Lipschitz bound.
 - The adjoint robust term is exact for the linearized cost. Nonlinear

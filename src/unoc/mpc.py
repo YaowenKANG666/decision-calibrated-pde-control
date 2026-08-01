@@ -41,7 +41,7 @@ def _sequence_cost(
     adversary_iterations: int = 3,
     adversary_step_size: float = 0.8,
 ) -> torch.Tensor:
-    if robust and calibrator.norm_kind == "ellipsoid":
+    if robust and calibrator.norm_kind in {"ellipsoid", "max"}:
         if adversarial:
             return _adversarial_robust_sequence_cost(
                 model,
@@ -113,7 +113,11 @@ def _adjoint_robust_sequence_cost(
     boundary: tuple[float, float],
     control_weight: float,
 ) -> torch.Tensor:
-    """First-order robust counterpart using full finite-horizon sensitivities."""
+    """First-order robust counterpart using full finite-horizon sensitivities.
+
+    The calibrator supplies the exact support of either the normalized
+    ellipsoid or the simultaneous coordinate box in the adjoint direction.
+    """
 
     count, horizon = sequences.shape
     state = initial_state[None, :].expand(count, -1)
@@ -206,18 +210,25 @@ def _adversarial_robust_sequence_cost(
             control_weight,
         )
         gradient = torch.autograd.grad(cost.sum(), perturbations)[0]
-        gradient_norm = torch.sqrt(
-            torch.mean(gradient.square(), dim=2, keepdim=True)
-        ).clamp_min(1e-8)
         with torch.no_grad():
-            perturbations = perturbations + step_size * gradient / gradient_norm
-            norm = torch.sqrt(
-                torch.mean(perturbations.square(), dim=2, keepdim=True)
-            ).clamp_min(1e-8)
-            perturbations = perturbations * torch.clamp(
-                calibrator.multiplier / norm,
-                max=1.0,
-            )
+            if calibrator.norm_kind == "max":
+                perturbations = perturbations + step_size * gradient.sign()
+                perturbations = perturbations.clamp(
+                    -calibrator.multiplier,
+                    calibrator.multiplier,
+                )
+            else:
+                gradient_norm = torch.sqrt(
+                    torch.mean(gradient.square(), dim=2, keepdim=True)
+                ).clamp_min(1e-8)
+                perturbations = perturbations + step_size * gradient / gradient_norm
+                norm = torch.sqrt(
+                    torch.mean(perturbations.square(), dim=2, keepdim=True)
+                ).clamp_min(1e-8)
+                perturbations = perturbations * torch.clamp(
+                    calibrator.multiplier / norm,
+                    max=1.0,
+                )
         perturbations = perturbations.detach().requires_grad_(True)
     with torch.no_grad():
         return _perturbed_rollout_cost(

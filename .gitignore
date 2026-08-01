@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+.DS_Store
 .pytest_cache/
 .ruff_cache/
 .venv/
@@ -7,6 +8,11 @@ __pycache__/
 data/*.npz
 checkpoints/*.pt
 *.pt
+datasets/
+*.tgz
+*.tar.gz
+tmp/
+open_source_release/
 results/*.json
 results/*.csv
 results/*.png
@@ -18,6 +24,9 @@ results/normalized_adjoint_seed0/
 results/quick_fno/
 results/stratified_seed0/
 results/structured_uq_seed0/
+results/combined_paper_smoke/
+results/combined_paper_smoke_v2/
+results/release_smoke/
 paper_rewriting_output/final_paper/*.aux
 paper_rewriting_output/final_paper/*.bbl
 paper_rewriting_output/final_paper/*.blg
