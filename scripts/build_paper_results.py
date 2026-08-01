@@ -149,12 +149,13 @@ def render_markdown(summary: dict) -> str:
         )
     ns2d = summary.get("ns2d")
     if ns2d is not None:
+        mean_rmse = ns2d.get("mean_rmse", ns2d.get("mean_l2_error"))
         lines.extend(
             [
                 "## Official NS2D function-valued benchmark",
                 "",
                 f"- Simultaneous test coverage: {float(ns2d['test_simultaneous_coverage']):.3f}",
-                f"- Mean L2 error: {float(ns2d['mean_l2_error']):.6f}",
+                f"- Mean field RMSE: {float(mean_rmse):.6f}",
                 f"- Mean full band width: {float(ns2d['mean_full_band_width']):.6f}",
                 f"- Pointwise scale-error Pearson r: {float(ns2d['scale_error_pearson']):.3f}",
                 f"- Proper train/audit/test sizes: {ns2d['n_train']}/{ns2d['n_audit']}/{ns2d['n_test']}",

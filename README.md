@@ -1,223 +1,227 @@
-# Decision-Calibrated Robust Control
+# Decision-Calibrated Robust PDE Control
 
-**From Predictive Uncertainty to Decision-Effective Dynamics Ambiguity Sets
-for Robust Control under Deployment Shift**
+**From FNO predictive uncertainty to decision-effective dynamics ambiguity sets**
 
-This project is about uncertainty-aware robust control, not about proposing a
-new neural-operator architecture. It studies a decision-focused question:
-how can predictive model uncertainty be converted into a dynamics ambiguity
-set that is effective for downstream control decisions?
+This repository studies one question: how can uncertainty from a Fourier
+Neural Operator (FNO) world model be converted into a dynamics ambiguity set
+that is useful for robust control?
 
-The default implementation trains a base FNO and a second FNO on the same
-inputs with slightly perturbed labels. Their smoothed disagreement supplies a
-local scale. A learned heteroscedastic head remains available as a baseline.
-The one-step wrapper outputs
+The contribution is not a new FNO block. The FNO supplies a differentiable
+one-step PDE world model. The research contribution is the interface from
+prediction to uncertainty, from uncertainty to a calibrated field-valued set,
+and from that set to robust model predictive control (MPC).
 
-\[
-\widehat u_{t+1},\qquad \sigma_\theta(u_t,a_t),
-\]
+![Method overview](figures/method_01_chain_schematic.png)
 
-and a small held-out deployment audit set conformalizes either the anisotropic set
+## Method
 
-\[
-\mathcal U_\theta(u,a)=
-\left\{\widehat G_\theta(u,a)+\sigma_\theta(u,a)\odot z:
-\|z\|_{2,n}\leq q\right\}.
-\]
+For a state field $u_t$, action $a_t$, and observed physical parameters
+$\xi_{\mathrm{obs}}$, the residual FNO predicts
 
-or the simultaneous coordinate box
+$$
+\widehat u_{t+1}
+=\widehat G_\theta(u_t,a_t,\xi_{\mathrm{obs}})
+=u_t+\delta_\theta(u_t,a_t,\xi_{\mathrm{obs}}).
+$$
 
-\[
-\mathcal U_\infty(u,a)=
-\left\{\widehat G_\theta(u,a)+\Delta:
-|\Delta_j|\leq q_\infty\sigma_{\theta,j}(u,a),\;\forall j\right\}.
-\]
+A second FNO uses the same proper-training inputs and Gaussian-perturbed
+targets. The smoothed disagreement between the two operators defines a local
+scale $\sigma_\theta$. A disjoint deployment-audit split then calibrates either
+an anisotropic ellipsoid
 
-The max-type score gives simultaneous spatial coverage for one random
-function-valued transition. It does not by itself give trajectory coverage.
-For a fixed rollout horizon we therefore calibrate a separate
-max-over-time-and-coordinate score on independent behavior-policy
-trajectories. That split-conformal band covers an entire random rollout under
-the audited trajectory distribution; it is not advertised as a certificate
-for counterfactual MPC action sequences.
+$$
+\mathcal U_2(u,a)
+=\left\{
+\widehat G_\theta(u,a)+\Delta:
+\left\|\Delta\oslash\sigma_\theta(u,a)\right\|_{2,n}\le q_2
+\right\},
+$$
 
-The primary controller approximately solves a nonlinear robust inner problem
-over this same set by projected gradient ascent. A faster ablation queries the
-set in its finite-horizon adjoint direction:
+or a simultaneous coordinate box
 
-\[
-\sup_{\Delta\in\mathcal U_\theta}
+$$
+\mathcal U_\infty(u,a)
+=\left\{
+\widehat G_\theta(u,a)+\Delta:
+|\Delta_j|\le q_\infty\sigma_{\theta,j}(u,a)\ \text{for every }j
+\right\}.
+$$
+
+The controller queries the same set through either its exact support function
+or a nonlinear adversarial rollout. For the ellipsoid and the normalized
+field inner product,
+
+$$
+\sup_{\Delta\in\mathcal U_2}
 \langle\lambda,\Delta\rangle_n
-=q\|\lambda\odot\sigma_\theta\|_{2,n}.
-\]
+=q_2\left\|\lambda\odot\sigma_\theta\right\|_{2,n}.
+$$
 
-This converts predictive uncertainty into either a nonlinear adversarial
-rollout or a first-order robust cost without recalibrating a different score.
-Isotropic L2 tubes are the main baseline. Residual FNO is the initial world
-model; TNO, DSC-DNO, and MoE are deferred architecture-independence checks.
+Split conformal coverage, deterministic error propagation, and closed-loop
+performance are evaluated as separate claims. Marginal conformal coverage is
+not presented as a safety certificate for counterfactual MPC trajectories.
 
-## Current scope
+## Implemented benchmarks
 
-- controlled 1D viscous Burgers equation;
-- non-homogeneous Dirichlet boundary inputs;
-- viscosity, boundary, and combined deployment shifts;
-- a residual FNO world model for the current paper experiments;
-- perturbation-disagreement scale plus a learned-head baseline;
-- max-type simultaneous spatial conformal boxes;
-- a separate max-over-time-and-coordinate trajectory band;
-- small deployment-audit conformalization of a heteroscedastic ellipsoid;
-- nominal, in-distribution-L2, audit-L2, adjoint-support, and adversarial
-  robust CEM-MPC;
-- explicit multi-step error and value-gap theorem targets.
+- Controlled one-dimensional viscous Burgers dynamics with an action channel.
+- Viscosity, boundary, initial-condition, actuator-gain, and compound shifts.
+- A residual FNO with four Fourier blocks and ResNet-style skip connections.
+- Clean-label and perturbed-label FNO training.
+- Isotropic $L^2$, anisotropic ellipsoidal, and simultaneous box ambiguity sets.
+- Nominal, adjoint-robust, and projected-gradient adversarial MPC.
+- The official $128\times128$ NeuralOperator Navier--Stokes data as a
+  high-dimensional uncertainty benchmark.
+- Independent value-gap scaling and value-bound audits.
 
-## Quick start
+The public Navier--Stokes pairs contain no action channel. They test
+function-valued uncertainty calibration, not two-dimensional closed-loop
+control.
 
-The quick experiment is CPU-compatible:
+## Repository layout
 
-```bash
-python -m pip install -e ".[dev]"
-dcurc-experiment --model fno --quick --output-dir results
+```text
+src/unoc/                 PDE simulator, FNO models, calibration, MPC, audits
+notebooks/                Portable Jupyter workflow
+scripts/                  Data download, result audit, and figure generation
+results/                  Burgers metrics and traceable summaries
+experiments/              Reference CSV/JSON outputs and standalone figures
+theory/                   Error-propagation and robust-control derivations
+docs/                     Dataset and experimental-protocol documentation
+paper/                    Current preprint PDF
+tests/                    Numerical and structural regression tests
 ```
 
-Use `--uncertainty head` for the learned-scale baseline; perturbation
-disagreement is the default.
+## Installation
 
-## Notebook-first Colab workflow
+Python 3.10 or newer is required.
 
-[`notebooks/Decision_Calibrated_PDE_Control_Colab.ipynb`](notebooks/Decision_Calibrated_PDE_Control_Colab.ipynb)
-is the canonical reproducible workflow. It installs the project, downloads the
-official 128-by-128 NeuralOperator Navier--Stokes archive from Zenodo, trains
-the clean/perturbed two-FNO uncertainty model, runs controlled Burgers and the
-four-bound comparison, exports one conclusion per figure, and packages results
-for download.
+```bash
+git clone https://github.com/YaowenKANG666/decision-calibrated-pde-control.git
+cd decision-calibrated-pde-control
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+```
 
-The public NS2D pairs contain no action channel. They validate simultaneous
-function-valued uncertainty coverage, not closed-loop control. Raw data are
-downloaded at runtime and are excluded from Git and release archives; see
+For the official NeuralOperator dataset loader, install the optional
+dependency:
+
+```bash
+python -m pip install -e ".[dev,ns2d]"
+```
+
+## Reproduce the experiments
+
+A CPU-compatible smoke test is:
+
+```bash
+dcurc-experiment --model fno --quick --device cpu --output-dir results/smoke
+```
+
+The full controlled-Burgers run is:
+
+```bash
+dcurc-experiment \
+  --model fno \
+  --uncertainty perturbation \
+  --control-cases 24 \
+  --control-horizon 20 \
+  --seed 27 \
+  --output-dir results/fno_burgers_seed27
+```
+
+The portable notebook
+[`notebooks/Decision_Calibrated_PDE_Control.ipynb`](notebooks/Decision_Calibrated_PDE_Control.ipynb)
+uses ordinary Python and Jupyter. It detects the repository root, chooses CPU
+or CUDA when available, and writes every artifact to project-relative paths.
+
+The NS2D archive is downloaded only when that optional experiment is enabled.
+Raw data and large checkpoints are excluded from version control. Dataset
+provenance and the expected download are documented in
 [`docs/DATASET.md`](docs/DATASET.md).
 
-For the intended experiment:
+## Ablation protocol
+
+The paper reports three controlled ablation groups. Within each group, all
+variants use identical evaluation cases and differ only in the named factor.
+
+| Group | Fixed within the group | Varied factor |
+|---|---|---|
+| Calibration and geometry | trained FNO pair, scale rule, 90% target, 800 compound-shift transitions | source versus deployment calibration; $L^2$ tube versus ellipsoid versus box |
+| Robust-control interface | trained FNO pair, 24 matched plants, initial field, horizon, CEM seeds | nominal planning, ambiguity geometry, adjoint support, or adversarial rollout |
+| Value-bound construction | 60 calibration and 160 test trajectories, horizon 20, $\gamma=0.95$, 90% value-level target | global maximum, local recursion, adjoint support, or adjoint plus curvature |
+
+These are conditional, within-run ablations. They isolate mechanism but do not
+replace a multi-seed population study. Full settings are recorded in
+[`docs/EXPERIMENT_PROTOCOL.md`](docs/EXPERIMENT_PROTOCOL.md).
+
+## Reference results
+
+The main Burgers result uses one seed and 24 matched actuator-gain cases. Lower
+closed-loop cost is better.
+
+| Controller | Mean cost | Change from nominal | Empirical p90 | Change from nominal |
+|---|---:|---:|---:|---:|
+| Nominal MPC | 0.5797 | - | 1.0752 | - |
+| Source-$L^2$ robust MPC | 0.5724 | -1.27% | 1.0250 | -4.66% |
+| Audit-$L^2$ robust MPC | 0.5686 | -1.92% | 0.9914 | -7.79% |
+| Ellipsoid-adjoint MPC | 0.5747 | -0.88% | 1.0201 | -5.12% |
+| Box-adjoint MPC | 0.5688 | -1.89% | 0.9586 | -10.84% |
+| Adversarial ellipsoid MPC | 0.5764 | -0.58% | 1.0532 | -2.04% |
+
+The NS2D FNO obtained a mean field RMSE of 0.1635, simultaneous test
+coverage of 0.883 at a nominal 0.90 level, and a mean full band width of
+4.3409. The disagreement scale had weak pointwise error association
+($r=0.169$), so this benchmark is reported as a negative tightness result.
+
+All displayed numbers are checked against saved JSON and CSV files by:
 
 ```bash
-dcurc-experiment --model fno --output-dir results
+python scripts/audit_release_results.py
 ```
 
-Each run trains a one-step world model and its chosen uncertainty mechanism,
-then calibrates scalar L2 tubes, normalized ellipsoids, and simultaneous
-coordinate boxes. It evaluates coverage under four regimes and compares
-uncontrolled, nominal MPC, in-distribution-L2 robust MPC, deployment-audit-L2
-robust MPC, ellipsoid/box adjoint-support MPC, and nonlinear adversarial MPC
-under joint shift. It also audits direct max-over-time-and-coordinate coverage
-on held-out behavior-policy trajectories; that audit is not a certificate for
-counterfactual MPC trajectories.
+The generated report is available at
+[`results/data_integrity/DATA_AUDIT.md`](results/data_integrity/DATA_AUDIT.md).
 
-[`RESULTS_PRELIMINARY.md`](RESULTS_PRELIMINARY.md) reports the initial
-three-seed paired actuator-gain sweep. It is explicitly labeled mechanism
-evidence rather than a final statistical claim.
+## Theory boundary
 
-[`RESULTS_FULL.md`](RESULTS_FULL.md) records the full seed-27 controlled
-Burgers run, deterministic theorem-scaling checks, the 60/160 independent
-value-bound comparison, and the official 128-by-128 NS2D audit. It also states
-the guarantee boundary for every table.
+If a uniform one-step bound holds on the relevant region,
 
-## Deferred architecture ablations
+$$
+\left\|G_\star(x,a)-\widehat G(x,a)\right\|\le\epsilon,
+$$
 
-The current manuscript reports FNO only. The following backbones remain in the
-code as future architecture-independence checks and are not part of the present
-evidence:
+and the dynamics are $L_G$-Lipschitz, then
 
-`fno`
-: Standard periodic Fourier spectral convolution plus local residual maps.
+$$
+e_h\le\epsilon\sum_{k=0}^{h-1}L_G^k.
+$$
 
-`tno`
-: Zero-embedded doubled-grid finite-section spectral convolution, intended to
-  reduce the wrap-around bias caused by non-periodic boundaries.
+With an $L_r$-Lipschitz reward and $\gamma L_G<1$, the policy-transfer term is
 
-`dscdno`
-: Dynamic displacement-structured convolutional DNO. Input-conditioned
-  generator pairs define low-displacement-rank spatial maps, followed by an
-  internal residual update.
-
-`moe`
-: Input-conditioned mixture of FNO, TNO, and DSC-DNO experts. Total predictive
-  variance includes both within-expert scale and between-expert disagreement.
-
-MoE is treated as a hypothesis, not assumed to win.
-All backbones use ResNet-style skip connections inside their operator blocks.
-ResNet is not treated as a separate world-model family.
-
-## Theory
-
-[`theory/error_propagation.md`](theory/error_propagation.md) derives:
-
-\[
-\|u_h-\widehat u_h\|
-\leq \epsilon\sum_{j=0}^{h-1}L_G^j
-\]
-
-and, under a common closed-loop Lipschitz condition,
-
-\[
+$$
 V_G^{\pi^\star}-V_G^{\widehat\pi}
-\leq
+\le
 \frac{2\gamma L_r\epsilon}
-{(1-\gamma)(1-\gamma L_G)}.
-\]
+{(1-\gamma)(1-\gamma L_G)}
++\delta_{\mathrm{opt}}.
+$$
 
-For \(L_G\leq1\), this reduces to the target
-\(O(\epsilon/(1-\gamma)^2)\) dependence.
-
-[`theory/perturbation_conformal_robust_control.md`](theory/perturbation_conformal_robust_control.md)
-gives the combined construction, exact polyhedral tightening margins, support
-functions, guarantee boundaries, and implementation map.
-
-[`experiments/reward_value_gap_colab_final/`](experiments/reward_value_gap_colab_final/) contains a
-reproducible reward/value experiment that attains the
-`epsilon/(1-gamma)^2` fixed-policy rate analytically, tests finite-horizon
-propagation in controlled Burgers dynamics, and audits the trained FNO on
-visited joint-shift trajectories. Source CSV files and PNG/SVG/PDF figure
-exports are included.
-
-[`experiments/bound_comparison_colab_final/`](experiments/bound_comparison_colab_final/) contains the
-full independent-test results comparing
-global, local-recursion, adjoint-support, and adjoint-plus-curvature value
-bounds using disjoint calibration and test trajectories. Coverage and bound
-utilization are reported together so that an undersized invalid bound cannot
-appear artificially tight.
-
-After a full run, create traceable manuscript tables and the three standalone
-decision-effectiveness figures with:
-
-```bash
-python scripts/build_paper_results.py \
-  --burgers-metrics results/fno_burgers_seed27/fno_metrics.json \
-  --bound-summary experiments/bound_comparison_colab_final/results/summary.json \
-  --ns2d-metrics experiments/ns2d_colab_v2/results/metrics.json \
-  --output-dir results/final_summary
-
-python scripts/build_decision_figures.py \
-  --metrics results/fno_burgers_seed27/fno_metrics.json \
-  --output-dir results/final_summary/figures
-```
-
-The first command recomputes all relative changes from JSON instead of copying
-numbers by hand. The second exports PNG, editable SVG/PDF, and 600 DPI TIFF
-files, one conclusion per figure.
-
-The current paper-like report is
-[`paper_rewriting_output/final_paper/main.pdf`](paper_rewriting_output/final_paper/main.pdf).
+For $L_G\le1$, this has the target
+$O\!\left(\epsilon/(1-\gamma)^2\right)$ dependence. This deterministic theorem
+uses a uniform error assumption; marginal conformal coverage does not imply it.
 
 ## Scientific status
 
-This is a research prototype. One-step split conformal prediction gives a
-marginal transition statement. A separately calibrated max-over-time-and-space
-score gives a simultaneous statement only for exchangeable behavior-policy
-rollouts; neither result certifies counterfactual MPC actions. The deterministic
-rollout/value theorem instead assumes a uniform one-step error on a
-forward-invariant region. Marginal conformal coverage does not imply that
-assumption. The repository keeps these claims separate and tests whether
-calibrated uncertainty improves decisions rather than reporting calibration
-alone.
+This repository is a research prototype. The current evidence supports a
+mechanism-level claim: calibrated field geometry can change robust-control
+decisions and their empirical tail cost. It does not establish universal
+controller superiority, global safety, grid-independent coverage, or a
+population-level effect across training seeds.
+
+The current preprint is available at
+[`paper/decision_calibrated_robust_control.pdf`](paper/decision_calibrated_robust_control.pdf).
 
 ## License
 

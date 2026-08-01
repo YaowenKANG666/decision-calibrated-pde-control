@@ -3,11 +3,25 @@
   "parameters": 240454,
   "quick": false,
   "device": "cuda",
-  "architecture": {
-    "width": 32,
-    "modes": 14,
-    "layers": 4
-  },
+    "architecture": {
+        "width": 32,
+        "modes": 14,
+        "layers": 4
+    },
+    "data_protocol": {
+        "seed": 27,
+        "proper_training": 4000,
+        "validation": 600,
+        "source_calibration": 800,
+        "deployment_audit": 300,
+        "test_per_regime": 800,
+        "trajectory_audit": 200,
+        "trajectory_test": 400,
+        "trajectory_horizon": 10,
+        "control_cases": 24,
+        "control_horizon": 20,
+        "control_design": "matched actuator-gain sweep with common initial field, viscosity, boundaries, and CEM seeds"
+    },
   "uncertainty": {
     "method": "perturbation",
     "label_noise_multiplier": 0.05,

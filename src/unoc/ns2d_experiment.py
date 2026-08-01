@@ -109,7 +109,7 @@ def estimate_floor(base, perturbed, loader, device, smoothing_window):
 
 @torch.no_grad()
 def collect_scores(base, perturbed, loader, device, smoothing_window, floor):
-    scores, l2_errors, widths, scale_error_pairs = [], [], [], []
+    scores, field_rmses, widths, scale_error_pairs = [], [], [], []
     examples = None
     for batch in loader:
         x = batch["x"].to(device)
@@ -120,7 +120,9 @@ def collect_scores(base, perturbed, loader, device, smoothing_window, floor):
         residual = y - mean
         score = (residual.abs() / scale).flatten(1).amax(dim=1)
         scores.append(score.cpu().numpy())
-        l2_errors.append(torch.sqrt(torch.mean(residual.square(), dim=(1, 2, 3))).cpu().numpy())
+        field_rmses.append(
+            torch.sqrt(torch.mean(residual.square(), dim=(1, 2, 3))).cpu().numpy()
+        )
         widths.append(scale.mean(dim=(1, 2, 3)).cpu().numpy())
         # Bounded subsample for a readable error-scale scatter plot.
         flat_scale = scale.flatten().cpu().numpy()
@@ -139,7 +141,7 @@ def collect_scores(base, perturbed, loader, device, smoothing_window, floor):
             }
     return {
         "scores": np.concatenate(scores),
-        "l2_errors": np.concatenate(l2_errors),
+        "field_rmses": np.concatenate(field_rmses),
         "mean_scales": np.concatenate(widths),
         "scale_error_pairs": np.concatenate(scale_error_pairs),
         "example": examples,
@@ -459,7 +461,11 @@ def run(args):
         "floor": floor,
         "q90": q90,
         "test_simultaneous_coverage": float(np.mean(test["scores"] <= q90)),
-        "mean_l2_error": float(np.mean(test["l2_errors"])),
+        "mean_rmse": float(np.mean(test["field_rmses"])),
+        "rmse_definition": (
+            "sqrt(mean((prediction-target)^2)) over all output coordinates, "
+            "averaged over test samples"
+        ),
         "mean_full_band_width": float(2.0 * q90 * np.mean(test["mean_scales"])),
         "scale_error_pearson": float(
             np.corrcoef(

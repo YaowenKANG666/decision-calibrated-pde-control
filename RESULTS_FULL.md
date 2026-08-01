@@ -8,18 +8,18 @@ this prose summary, are the source of truth.
 
 The deterministic sharpness witness uses
 
-\[
+$$
 G(x)=L_Gx,\qquad \widehat G(x)=L_Gx+\epsilon,\qquad
 r(x)=-L_r|x|.
-\]
+$$
 
 It gives the exact fixed-policy gap
 
-\[
+$$
 |V_G-V_{\widehat G}|=
 \frac{\gamma L_r\epsilon}
 {(1-\gamma)(1-\gamma L_G)}.
-\]
+$$
 
 Across six epsilon values and six discount factors, the numerical checks give:
 
@@ -39,6 +39,11 @@ The residual FNO and label-perturbed FNO were trained for 60 epochs. The final
 perturbed-model validation MSE was `9.87e-5`. The table uses independent
 combined-shift transitions.
 
+This is the calibration/geometry ablation. All rows use the same trained FNO
+pair and 800 identical test transitions. Source-L2 versus audit-L2 changes only
+the calibration population. The three audit rows use the same 300 deployment
+transitions and change only the score geometry.
+
 | Set | Function coverage | Decision-direction coverage | Mean support |
 |---|---:|---:|---:|
 | source-calibrated L2 | 0.741 | 0.820 | 0.00650 |
@@ -53,6 +58,9 @@ coverage and the largest mean support.
 
 All controllers use the same learned world model and 24 matched combined-shift
 cases of horizon 20. Lower cost is better; changes are relative to nominal MPC.
+The initial field, viscosity, boundaries, and per-step CEM seeds are shared
+across controller variants. See `docs/EXPERIMENT_PROTOCOL.md` for the exact
+within-group controls.
 
 | Controller | Mean cost | Mean change | empirical p90 | p90 change |
 |---|---:|---:|---:|---:|
@@ -74,7 +82,9 @@ audited rollout distribution, not to counterfactual MPC action sequences.
 ## Four independently calibrated value bounds
 
 Each raw bound was scaled using 60 calibration trajectories and evaluated on
-160 disjoint test trajectories at horizon 20 and gamma 0.95.
+160 disjoint test trajectories at horizon 20 and gamma 0.95. All four rows use
+the same trajectories, observed value gaps, and 90% target; only the raw bound
+construction changes.
 
 | Method | Coverage | Mean bound | Median utilization | p90 utilization | Max utilization |
 |---|---:|---:|---:|---:|---:|
@@ -93,13 +103,15 @@ claimed.
 The experiment uses 800 proper-training, 200 conformal-audit, and 300 disjoint
 test pairs at 128 by 128 resolution.
 
-| Mean relative L2 error | max-score q90 | Simultaneous test coverage | Mean full band width | Scale-error Pearson r |
+| Mean field RMSE | max-score q90 | Simultaneous test coverage | Mean full band width | Scale-error Pearson r |
 |---:|---:|---:|---:|---:|
 | 0.1635 | 30.679 | 0.883 | 4.3409 | 0.169 |
 
 The realized 0.883 proportion is not rounded into a 0.90 guarantee. The public
 dataset has no action channel, so these results test high-dimensional
 function-space calibration only, not two-dimensional closed-loop control.
+The value 0.1635 is the square root of mean coordinate-wise squared error,
+averaged across test fields; it is not a relative L2 error.
 The weak scale-error correlation also shows that the current perturbed-model
 disagreement is a poor spatial error localizer on this benchmark; a stronger
 uncertainty mechanism is required before claiming tight high-dimensional sets.

@@ -39,7 +39,7 @@ Trajectory max-score coverage: 0.880 at horizon 10.
 ## Official NS2D function-valued benchmark
 
 - Simultaneous test coverage: 0.883
-- Mean L2 error: 0.163472
+- Mean field RMSE: 0.163472
 - Mean full band width: 4.340887
 - Pointwise scale-error Pearson r: 0.169
 - Proper train/audit/test sizes: 800/200/300

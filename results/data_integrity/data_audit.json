@@ -1,0 +1,597 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "Burgers backbone is FNO",
+      "status": "PASS",
+      "detail": "fno"
+    },
+    {
+      "name": "FNO architecture recorded",
+      "status": "PASS",
+      "detail": "{\"layers\": 4, \"modes\": 14, \"width\": 32}"
+    },
+    {
+      "name": "FNO pair parameter count is positive",
+      "status": "PASS",
+      "detail": "parameters=240454"
+    },
+    {
+      "name": "uncontrolled: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "uncontrolled: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "uncontrolled: mean",
+      "status": "PASS",
+      "detail": "observed=0.694795177512, stored=0.694795177512, abs_diff=0"
+    },
+    {
+      "name": "uncontrolled: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0, stored=0, abs_diff=0"
+    },
+    {
+      "name": "uncontrolled: p90",
+      "status": "PASS",
+      "detail": "observed=0.694795177512, stored=0.694795177512, abs_diff=0"
+    },
+    {
+      "name": "uncontrolled: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=0, stored=0, abs_diff=0"
+    },
+    {
+      "name": "nominal_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "nominal_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "nominal_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.579732690873, stored=0.579732690873, abs_diff=0"
+    },
+    {
+      "name": "nominal_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.319327319755, stored=0.319327319755, abs_diff=0"
+    },
+    {
+      "name": "nominal_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=1.07517036468, stored=1.07517036468, abs_diff=0"
+    },
+    {
+      "name": "nominal_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.27825014907, stored=1.27825014907, abs_diff=0"
+    },
+    {
+      "name": "id_l2_robust_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "id_l2_robust_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "id_l2_robust_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.5723875722, stored=0.5723875722, abs_diff=0"
+    },
+    {
+      "name": "id_l2_robust_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.294196003046, stored=0.294196003046, abs_diff=0"
+    },
+    {
+      "name": "id_l2_robust_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=1.02501602405, stored=1.02501602405, abs_diff=0"
+    },
+    {
+      "name": "id_l2_robust_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.18544519758, stored=1.18544519758, abs_diff=0"
+    },
+    {
+      "name": "audit_l2_robust_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "audit_l2_robust_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "audit_l2_robust_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.568603518224, stored=0.568603518224, abs_diff=0"
+    },
+    {
+      "name": "audit_l2_robust_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.275854376336, stored=0.275854376336, abs_diff=0"
+    },
+    {
+      "name": "audit_l2_robust_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=0.99143293983, stored=0.99143293983, abs_diff=0"
+    },
+    {
+      "name": "audit_l2_robust_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.11521384622, stored=1.11521384622, abs_diff=0"
+    },
+    {
+      "name": "adjoint_robust_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "adjoint_robust_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "adjoint_robust_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.574650360689, stored=0.574650360689, abs_diff=0"
+    },
+    {
+      "name": "adjoint_robust_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.293606204447, stored=0.293606204447, abs_diff=0"
+    },
+    {
+      "name": "adjoint_robust_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=1.02009089233, stored=1.02009089233, abs_diff=0"
+    },
+    {
+      "name": "adjoint_robust_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.2298369652, stored=1.2298369652, abs_diff=0"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.568792174581, stored=0.568792174581, abs_diff=0"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.258394595494, stored=0.258394595494, abs_diff=0"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=0.958605546137, stored=0.958605546137, abs_diff=0"
+    },
+    {
+      "name": "box_adjoint_robust_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.10068324311, stored=1.10068324311, abs_diff=0"
+    },
+    {
+      "name": "adversarial_robust_mpc: control shape",
+      "status": "PASS",
+      "detail": "costs=(24,), actions=(24, 20)"
+    },
+    {
+      "name": "adversarial_robust_mpc: finite values",
+      "status": "PASS",
+      "detail": "costs and actions are finite"
+    },
+    {
+      "name": "adversarial_robust_mpc: mean",
+      "status": "PASS",
+      "detail": "observed=0.576382804805, stored=0.576382804805, abs_diff=0"
+    },
+    {
+      "name": "adversarial_robust_mpc: standard deviation",
+      "status": "PASS",
+      "detail": "observed=0.310360559833, stored=0.310360559833, abs_diff=0"
+    },
+    {
+      "name": "adversarial_robust_mpc: p90",
+      "status": "PASS",
+      "detail": "observed=1.05323955469, stored=1.05323955469, abs_diff=0"
+    },
+    {
+      "name": "adversarial_robust_mpc: mean absolute action",
+      "status": "PASS",
+      "detail": "observed=1.26234031308, stored=1.26234031308, abs_diff=0"
+    },
+    {
+      "name": "Matched control cases share viscosity",
+      "status": "PASS",
+      "detail": "unique_values=1"
+    },
+    {
+      "name": "Matched control cases share left_boundary",
+      "status": "PASS",
+      "detail": "unique_values=1"
+    },
+    {
+      "name": "Matched control cases share right_boundary",
+      "status": "PASS",
+      "detail": "unique_values=1"
+    },
+    {
+      "name": "Actuator-gain sweep is strictly ordered",
+      "status": "PASS",
+      "detail": "n=24, range=[-0.5, 1.5]"
+    },
+    {
+      "name": "Burgers combined shift id_l2: integer denominator",
+      "status": "PASS",
+      "detail": "593/800=0.74125"
+    },
+    {
+      "name": "Burgers combined shift audit_l2: integer denominator",
+      "status": "PASS",
+      "detail": "707/800=0.88375"
+    },
+    {
+      "name": "Burgers combined shift audit_ellipsoid: integer denominator",
+      "status": "PASS",
+      "detail": "725/800=0.90625"
+    },
+    {
+      "name": "Burgers combined shift audit_simultaneous_box: integer denominator",
+      "status": "PASS",
+      "detail": "725/800=0.90625"
+    },
+    {
+      "name": "Burgers behavior trajectory: integer denominator",
+      "status": "PASS",
+      "detail": "352/400=0.88"
+    },
+    {
+      "name": "Value-bound test row count",
+      "status": "PASS",
+      "detail": "rows=160, stored=160"
+    },
+    {
+      "name": "Value bound global: coverage",
+      "status": "PASS",
+      "detail": "observed=0.9375, stored=0.9375, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: mean_bound",
+      "status": "PASS",
+      "detail": "observed=0.0987066784424, stored=0.0987066784424, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: median_utilization",
+      "status": "PASS",
+      "detail": "observed=0.209975606593, stored=0.209975606593, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: p90_utilization",
+      "status": "PASS",
+      "detail": "observed=0.687853085156, stored=0.687853085156, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: max_utilization",
+      "status": "PASS",
+      "detail": "observed=3.9191907918, stored=3.9191907918, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: mean_value_gap",
+      "status": "PASS",
+      "detail": "observed=0.0343359909109, stored=0.0343359909109, abs_diff=0"
+    },
+    {
+      "name": "Value bound global: integer denominator",
+      "status": "PASS",
+      "detail": "150/160=0.9375"
+    },
+    {
+      "name": "Value bound local: coverage",
+      "status": "PASS",
+      "detail": "observed=0.94375, stored=0.94375, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: mean_bound",
+      "status": "PASS",
+      "detail": "observed=0.0870352640208, stored=0.0870352640208, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: median_utilization",
+      "status": "PASS",
+      "detail": "observed=0.321788145177, stored=0.321788145177, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: p90_utilization",
+      "status": "PASS",
+      "detail": "observed=0.787550700584, stored=0.787550700584, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: max_utilization",
+      "status": "PASS",
+      "detail": "observed=2.18986193517, stored=2.18986193517, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: mean_value_gap",
+      "status": "PASS",
+      "detail": "observed=0.0343359909109, stored=0.0343359909109, abs_diff=0"
+    },
+    {
+      "name": "Value bound local: integer denominator",
+      "status": "PASS",
+      "detail": "151/160=0.94375"
+    },
+    {
+      "name": "Value bound adjoint: coverage",
+      "status": "PASS",
+      "detail": "observed=0.925, stored=0.925, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: mean_bound",
+      "status": "PASS",
+      "detail": "observed=0.203451630005, stored=0.203451630005, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: median_utilization",
+      "status": "PASS",
+      "detail": "observed=0.264926920255, stored=0.264926920255, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: p90_utilization",
+      "status": "PASS",
+      "detail": "observed=0.85400200327, stored=0.85400200327, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: max_utilization",
+      "status": "PASS",
+      "detail": "observed=1.76645750397, stored=1.76645750397, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: mean_value_gap",
+      "status": "PASS",
+      "detail": "observed=0.0343359909109, stored=0.0343359909109, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint: integer denominator",
+      "status": "PASS",
+      "detail": "148/160=0.925"
+    },
+    {
+      "name": "Value bound adjoint_curvature: coverage",
+      "status": "PASS",
+      "detail": "observed=0.925, stored=0.925, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: mean_bound",
+      "status": "PASS",
+      "detail": "observed=0.203451630005, stored=0.203451630005, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: median_utilization",
+      "status": "PASS",
+      "detail": "observed=0.264926920255, stored=0.264926920255, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: p90_utilization",
+      "status": "PASS",
+      "detail": "observed=0.85400200327, stored=0.85400200327, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: max_utilization",
+      "status": "PASS",
+      "detail": "observed=1.76645750397, stored=1.76645750397, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: mean_value_gap",
+      "status": "PASS",
+      "detail": "observed=0.0343359909109, stored=0.0343359909109, abs_diff=0"
+    },
+    {
+      "name": "Value bound adjoint_curvature: integer denominator",
+      "status": "PASS",
+      "detail": "148/160=0.925"
+    },
+    {
+      "name": "Value-gap epsilon slope",
+      "status": "PASS",
+      "detail": "observed=1, stored=1, abs_diff=0"
+    },
+    {
+      "name": "Value-gap effective-horizon slope",
+      "status": "PASS",
+      "detail": "observed=2, stored=2, abs_diff=8.88e-16"
+    },
+    {
+      "name": "Value-gap maximum numerical error",
+      "status": "PASS",
+      "detail": "observed=2.55351295664e-15, stored=2.55351295664e-15, abs_diff=0"
+    },
+    {
+      "name": "NS2D metric is named RMSE",
+      "status": "PASS",
+      "detail": "sqrt(mean((prediction-target)^2)) over all output coordinates, averaged over test samples"
+    },
+    {
+      "name": "NS2D split sizes are positive",
+      "status": "PASS",
+      "detail": "train/validation/audit/test=800/50/200/300"
+    },
+    {
+      "name": "NS2D training history length",
+      "status": "PASS",
+      "detail": "epochs=20"
+    },
+    {
+      "name": "NS2D training history is finite and nonnegative",
+      "status": "PASS",
+      "detail": "all stored train/validation MSE values checked"
+    },
+    {
+      "name": "NS2D 90% curve coverage",
+      "status": "PASS",
+      "detail": "observed=0.883333333333, stored=0.883333333333, abs_diff=0"
+    },
+    {
+      "name": "NS2D 90% quantile",
+      "status": "PASS",
+      "detail": "observed=30.6790180206, stored=30.6790180206, abs_diff=0"
+    },
+    {
+      "name": "NS2D 90% full width",
+      "status": "PASS",
+      "detail": "observed=4.34088710002, stored=4.3408870697, abs_diff=3.03e-08"
+    },
+    {
+      "name": "NS2D simultaneous field: integer denominator",
+      "status": "PASS",
+      "detail": "265/300=0.883333333333"
+    }
+  ],
+  "coverage": [
+    {
+      "name": "Burgers combined shift id_l2",
+      "successes": 593,
+      "total": 800,
+      "observed": 0.74125,
+      "target": 0.9,
+      "wilson_95": [
+        0.7097994666076861,
+        0.7703946412862073
+      ],
+      "target_in_wilson_95": false
+    },
+    {
+      "name": "Burgers combined shift audit_l2",
+      "successes": 707,
+      "total": 800,
+      "observed": 0.88375,
+      "target": 0.9,
+      "wilson_95": [
+        0.859682197927425,
+        0.9041498804322918
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Burgers combined shift audit_ellipsoid",
+      "successes": 725,
+      "total": 800,
+      "observed": 0.90625,
+      "target": 0.9,
+      "wilson_95": [
+        0.8840649428027062,
+        0.9245520782621405
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Burgers combined shift audit_simultaneous_box",
+      "successes": 725,
+      "total": 800,
+      "observed": 0.90625,
+      "target": 0.9,
+      "wilson_95": [
+        0.8840649428027062,
+        0.9245520782621405
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Burgers behavior trajectory",
+      "successes": 352,
+      "total": 400,
+      "observed": 0.88,
+      "target": 0.9,
+      "wilson_95": [
+        0.8444853274321313,
+        0.9082850657121113
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Value bound global",
+      "successes": 150,
+      "total": 160,
+      "observed": 0.9375,
+      "target": 0.9,
+      "wilson_95": [
+        0.8887831386074578,
+        0.9657007043237635
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Value bound local",
+      "successes": 151,
+      "total": 160,
+      "observed": 0.94375,
+      "target": 0.9,
+      "wilson_95": [
+        0.8965627172808032,
+        0.9701280376922926
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Value bound adjoint",
+      "successes": 148,
+      "total": 160,
+      "observed": 0.925,
+      "target": 0.9,
+      "wilson_95": [
+        0.8734905849508775,
+        0.9565794338965946
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "Value bound adjoint_curvature",
+      "successes": 148,
+      "total": 160,
+      "observed": 0.925,
+      "target": 0.9,
+      "wilson_95": [
+        0.8734905849508775,
+        0.9565794338965946
+      ],
+      "target_in_wilson_95": true
+    },
+    {
+      "name": "NS2D simultaneous field",
+      "successes": 265,
+      "total": 300,
+      "observed": 0.8833333333333333,
+      "target": 0.9,
+      "wilson_95": [
+        0.8420660083343473,
+        0.9149073620007219
+      ],
+      "target_in_wilson_95": true
+    }
+  ]
+}
