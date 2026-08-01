@@ -19,3 +19,7 @@ and robust decisions and control.
 Its Data Availability statement distinguishes study-generated Burgers samples
 from the reused NeuralOperator Reynolds-500 archive and cites the exact Zenodo
 record and `nsforcing_128.tgz` file.
+The manuscript now separates preliminaries, data preparation, methodology, and
+experimental evaluation. The Data preparation section records the Burgers
+sampling regimes, the public NS2D source, discretized learned maps, and split
+protocol before the method and result comparisons.

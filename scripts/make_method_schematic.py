@@ -165,7 +165,7 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
 
     # Offline row: proper training and audit calibration have distinct data roles.
     rounded_box(axis, (0.025, 0.625), 0.155, 0.235, BLUE_LIGHT, BLUE,
-                "Data split", r"$D_{\rm tr},D_{\rm val},D_{\rm cal}$", "Sec. 2.3")
+                "Data split", r"$D_{\rm tr},D_{\rm val},D_{\rm cal}$", "Sec. 3.4")
     rounded_box(
         axis,
         (0.225, 0.625),
@@ -175,12 +175,12 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
         BLUE,
         "Twin FNOs",
         r"$\widehat G_\theta,\widetilde G_{\widetilde\theta}$",
-        "Eqs. (14)--(16)",
+        "Sec. 4.2",
     )
     rounded_box(axis, (0.445, 0.625), 0.160, 0.235, TEAL_LIGHT, TEAL,
-                "Spatial scale", r"$\sigma_\theta(u,a)$", "Eqs. (17)--(19)")
+                "Spatial scale", r"$\sigma_\theta(u,a)$", "Sec. 4.3")
     rounded_box(axis, (0.650, 0.625), 0.165, 0.235, GOLD_LIGHT, GOLD,
-                "Split conformal", r"$q_g$ at $1-\alpha$", "Eqs. (12), (20)--(22)")
+                "Split conformal", r"$q_g$ at $1-\alpha$", "Secs. 2.3, 4.4")
     rounded_box(axis, (0.860, 0.625), 0.115, 0.235, PLANT_LIGHT, PLANT,
                 "Freeze", r"$\widehat G,\sigma,q_g$", "deploy", title_size=6.8)
 
@@ -207,11 +207,11 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
     axis.plot(wave_x, state_y + 0.020 + 0.025 * np.sin(2.2 * np.pi * phase), color=INK, lw=1.2)
 
     rounded_box(axis, (0.125, 0.125), 0.220, 0.285, TEAL_LIGHT, TEAL,
-                "Calibrated dynamics set", r"$\mathcal{U}_g(u_t,a)$", "Eqs. (23)--(26)")
+                "Calibrated dynamics set", r"$\mathcal{U}_g(u_t,a)$", "Sec. 4.4")
     rounded_box(axis, (0.445, 0.125), 0.180, 0.285, VIOLET_LIGHT, VIOLET,
-                "Robust MPC", r"$a_t^*=\arg\min_a\max_\Delta J$", "Eq. (27)")
+                "Robust MPC", r"$a_t^*=\arg\min_a\max_\Delta J$", "Sec. 4.6")
     rounded_box(axis, (0.740, 0.125), 0.205, 0.285, PLANT_LIGHT, PLANT,
-                "Physical PDE plant", r"$u_{t+1}=G_B^{\Delta T}(u_t,a_t^*;\xi)$", "Eqs. (1), (3)")
+                "Physical PDE plant", r"$u_{t+1}=G_B^{\Delta T}(u_t,a_t^*;\xi)$", "Sec. 3.1")
 
     straight_arrow(axis, (0.080, 0.267), (0.122, 0.267), color=INK)
     straight_arrow(
