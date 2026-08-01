@@ -1,0 +1,77 @@
+{
+  "config": {
+    "seed": 27,
+    "analytic_horizon": 5000,
+    "burgers_horizon": 40,
+    "burgers_cases": 10,
+    "reward_lipschitz": 1.0,
+    "analytic_epsilon": [
+      0.0001,
+      0.0003,
+      0.001,
+      0.003,
+      0.01,
+      0.03
+    ],
+    "burgers_epsilon": [
+      0.0005,
+      0.001,
+      0.002,
+      0.004,
+      0.008,
+      0.016
+    ],
+    "gammas": [
+      0.8,
+      0.9,
+      0.95,
+      0.97,
+      0.98,
+      0.99
+    ]
+  },
+  "analytic": {
+    "epsilon_log_log_slope": 1.0000000000000004,
+    "discount_horizon_log_log_slope": 1.9999999999999996,
+    "discount_slope_response": "absolute_value_gap / (gamma * epsilon)",
+    "max_simulation_relative_error": 2.55351295663786e-15,
+    "interpretation": "The scalar Lipschitz witness attains the fixed-policy bound; the generic optimal-policy regret theorem is twice this value."
+  },
+  "controlled_burgers": {
+    "maximum_gap_to_finite_horizon_bound_ratio": 0.35855036719546474,
+    "cases": 10,
+    "horizon": 40,
+    "guarantee": "Exact injected one-step error with a trajectory-local secant Lipschitz envelope; not a global PDE certificate."
+  },
+  "learned_fno": {
+    "status": "completed",
+    "checkpoint": "fno_perturbation_world_model.pt",
+    "guarantee": "finite_visited_set_empirical_audit_only",
+    "maximum_gap_to_local_envelope_ratio": 0.12379994482187759,
+    "mean_gap_to_local_envelope_ratio": 0.02809628469897122,
+    "empirical_epsilon_range": [
+      0.002809869675854341,
+      0.10503811783510623
+    ],
+    "observed_value_gap_range": [
+      3.772804799140328e-05,
+      0.8081574804881768
+    ]
+  },
+  "artifacts": {
+    "analytic_data": "data/analytic_sharpness.csv",
+    "burgers_value_data": "data/burgers_value_gap.csv",
+    "burgers_rollout_data": "data/burgers_rollout_error.csv",
+    "learned_fno_data": "data/learned_fno_value_gap.csv",
+    "individual_value_figures": [
+      "figures/value_01_epsilon_scaling",
+      "figures/value_02_discount_scaling",
+      "figures/value_03_burgers_gap_bound",
+      "figures/value_04_rollout_error"
+    ],
+    "individual_learned_fno_figures": [
+      "figures/value_05_fno_gap_discount",
+      "figures/value_06_fno_gap_envelope"
+    ]
+  }
+}

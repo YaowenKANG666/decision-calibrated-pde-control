@@ -34,7 +34,6 @@ from .calibration import _higher_quantile
 from .models import load_perturbation_world_model
 from .pde import BurgersSolver
 
-
 METHODS = ("global", "local", "adjoint", "adjoint_curvature")
 METHOD_LABELS = {
     "global": "Global max",

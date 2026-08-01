@@ -394,7 +394,7 @@ closed form.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.54\linewidth]{../../experiments/reward_value_gap/figures/value_02_discount_scaling.pdf}
+\includegraphics[width=0.54\linewidth]{../../experiments/reward_value_gap_colab_final/figures/value_02_discount_scaling.pdf}
 \caption{A sharp fixed-policy witness attains the
 \(O(\epsilon/(1-\gamma)^2)\) rate. The plotted value gap is normalized by
 \(\gamma\epsilon\), making the predicted slope exactly two. This is a theorem
@@ -526,8 +526,9 @@ the mean one-step relative L2 error is 0.1635 and the mean full coordinate-band
 width is 4.3409. The test proportion is not rounded to the nominal 0.90.
 More importantly, the large max-score multiplier and band width expose a
 failure mode: simultaneous coverage over \(128^2\) output coordinates can be
-too conservative to define a useful planning set. Because these pairs have no
-action channel, this experiment is evidence about function-space calibration
+too conservative to define a useful planning set. The pointwise disagreement
+scale also correlates only $r=0.169$ with absolute error, exposing weak spatial
+error localization. Because these pairs have no action channel, this experiment is evidence about function-space calibration
 and dimensionality, not robust control.
 
 \begin{table}[h]
@@ -548,7 +549,7 @@ Relative L2 error & Max-score \(q_{0.90}\) & Simultaneous coverage & Band width\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.52\linewidth]{../../experiments/ns2d_colab/figures/ns2d_10_coverage_width.pdf}
+\includegraphics[width=0.52\linewidth]{../../experiments/ns2d_colab_v2/figures/ns2d_10_coverage_width.pdf}
 \caption{Simultaneous coverage on the independent NS2D test split increases
 only by accepting wider coordinate bands. This is a function-space
 uncertainty stress test, not a controlled-system result.}

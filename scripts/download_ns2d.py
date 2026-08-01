@@ -16,7 +16,6 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-
 FILES = {
     128: {
         "name": "nsforcing_128.tgz",

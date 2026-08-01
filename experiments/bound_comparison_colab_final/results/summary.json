@@ -1,0 +1,68 @@
+{
+  "device": "cuda",
+  "calibration_cases": 60,
+  "test_cases": 160,
+  "horizon": 20,
+  "gamma": 0.95,
+  "auxiliary_constants": {
+    "epsilon_global": 0.0627131924919203,
+    "q_l2": 6.692401811876467,
+    "q_ellipsoid": 16.993467821488334,
+    "lipschitz_global": 1.0,
+    "reward_lipschitz_global": 5.422115802764893,
+    "gamma": 0.95
+  },
+  "curvature_coefficient": 0.0,
+  "target_coverage": 0.9,
+  "table": [
+    {
+      "method": "Global max",
+      "method_key": "global",
+      "target_coverage": 0.9,
+      "coverage": 0.9375,
+      "mean_bound": 0.0987066784423616,
+      "median_utilization": 0.20997560659345532,
+      "p90_utilization": 0.6878530851562844,
+      "max_utilization": 3.9191907918010562,
+      "mean_value_gap": 0.034335990910888854,
+      "calibration_multiplier": 0.0025640660447826978
+    },
+    {
+      "method": "Local recursion",
+      "method_key": "local",
+      "target_coverage": 0.9,
+      "coverage": 0.94375,
+      "mean_bound": 0.08703526402082228,
+      "median_utilization": 0.32178814517744103,
+      "p90_utilization": 0.7875507005844723,
+      "max_utilization": 2.1898619351657143,
+      "mean_value_gap": 0.034335990910888854,
+      "calibration_multiplier": 0.011999066872534853
+    },
+    {
+      "method": "Adjoint support",
+      "method_key": "adjoint",
+      "target_coverage": 0.9,
+      "coverage": 0.925,
+      "mean_bound": 0.20345163000526592,
+      "median_utilization": 0.26492692025498343,
+      "p90_utilization": 0.8540020032703798,
+      "max_utilization": 1.7664575039740313,
+      "mean_value_gap": 0.034335990910888854,
+      "calibration_multiplier": 0.1259093366538991
+    },
+    {
+      "method": "Adjoint + curvature",
+      "method_key": "adjoint_curvature",
+      "target_coverage": 0.9,
+      "coverage": 0.925,
+      "mean_bound": 0.20345163000526592,
+      "median_utilization": 0.26492692025498343,
+      "p90_utilization": 0.8540020032703798,
+      "max_utilization": 1.7664575039740313,
+      "mean_value_gap": 0.034335990910888854,
+      "calibration_multiplier": 0.1259093366538991
+    }
+  ],
+  "interpretation": "All final value-bound multipliers were selected on calibration trajectories; the reported table uses independent test trajectories."
+}

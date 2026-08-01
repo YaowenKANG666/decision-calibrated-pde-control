@@ -12,7 +12,6 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
-
 FORMATS = (".png", ".svg", ".pdf")
 
 

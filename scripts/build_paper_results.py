@@ -119,9 +119,11 @@ def render_markdown(summary: dict) -> str:
                     ],
                 ),
                 "",
-                "Trajectory max-score coverage: "
-                f"{float(burgers['trajectory']['coverage']):.3f} at horizon "
-                f"{int(float(burgers['trajectory']['horizon']))}.",
+                (
+                    "Trajectory max-score coverage: "
+                    f"{float(burgers['trajectory']['coverage']):.3f} at horizon "
+                    f"{int(float(burgers['trajectory']['horizon']))}."
+                ),
                 "",
             ]
         )
@@ -154,6 +156,7 @@ def render_markdown(summary: dict) -> str:
                 f"- Simultaneous test coverage: {float(ns2d['test_simultaneous_coverage']):.3f}",
                 f"- Mean L2 error: {float(ns2d['mean_l2_error']):.6f}",
                 f"- Mean full band width: {float(ns2d['mean_full_band_width']):.6f}",
+                f"- Pointwise scale-error Pearson r: {float(ns2d['scale_error_pearson']):.3f}",
                 f"- Proper train/audit/test sizes: {ns2d['n_train']}/{ns2d['n_audit']}/{ns2d['n_test']}",
                 "- Scope: function-valued uncertainty only; the public pairs have no action channel.",
                 "",

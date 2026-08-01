@@ -115,6 +115,11 @@ counterfactual MPC trajectories.
 three-seed paired actuator-gain sweep. It is explicitly labeled mechanism
 evidence rather than a final statistical claim.
 
+[`RESULTS_FULL.md`](RESULTS_FULL.md) records the full seed-27 controlled
+Burgers run, deterministic theorem-scaling checks, the 60/160 independent
+value-bound comparison, and the official 128-by-128 NS2D audit. It also states
+the guarantee boundary for every table.
+
 ## Deferred architecture ablations
 
 The current manuscript reports FNO only. The following backbones remain in the
@@ -166,14 +171,15 @@ For \(L_G\leq1\), this reduces to the target
 gives the combined construction, exact polyhedral tightening margins, support
 functions, guarantee boundaries, and implementation map.
 
-[`experiments/reward_value_gap/`](experiments/reward_value_gap/) contains a
+[`experiments/reward_value_gap_colab_final/`](experiments/reward_value_gap_colab_final/) contains a
 reproducible reward/value experiment that attains the
 `epsilon/(1-gamma)^2` fixed-policy rate analytically, tests finite-horizon
 propagation in controlled Burgers dynamics, and audits the trained FNO on
 visited joint-shift trajectories. Source CSV files and PNG/SVG/PDF figure
 exports are included.
 
-[`experiments/bound_comparison/`](experiments/bound_comparison/) compares
+[`experiments/bound_comparison_colab_final/`](experiments/bound_comparison_colab_final/) contains the
+full independent-test results comparing
 global, local-recursion, adjoint-support, and adjoint-plus-curvature value
 bounds using disjoint calibration and test trajectories. Coverage and bound
 utilization are reported together so that an undersized invalid bound cannot
@@ -185,8 +191,8 @@ decision-effectiveness figures with:
 ```bash
 python scripts/build_paper_results.py \
   --burgers-metrics results/fno_burgers_seed27/fno_metrics.json \
-  --bound-summary experiments/bound_comparison_colab/results/summary.json \
-  --ns2d-metrics experiments/ns2d_colab/results/metrics.json \
+  --bound-summary experiments/bound_comparison_colab_final/results/summary.json \
+  --ns2d-metrics experiments/ns2d_colab_v2/results/metrics.json \
   --output-dir results/final_summary
 
 python scripts/build_decision_figures.py \

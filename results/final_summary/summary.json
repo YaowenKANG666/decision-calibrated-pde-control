@@ -1,0 +1,186 @@
+{
+  "burgers": {
+    "training": {
+      "parameters": 240454,
+      "final_train_loss": 0.00010101409867638722,
+      "final_validation_loss": 7.670997370344897e-05
+    },
+    "combined_shift_sets": {
+      "id_l2": {
+        "coverage": 0.74125,
+        "mean_radius": 0.011411133222281933,
+        "decision_linear_coverage": 0.82,
+        "mean_decision_support": 0.006502438802272081
+      },
+      "audit_l2": {
+        "coverage": 0.88375,
+        "mean_radius": 0.01881721429526806,
+        "decision_linear_coverage": 0.93375,
+        "mean_decision_support": 0.01072266697883606
+      },
+      "audit_ellipsoid": {
+        "coverage": 0.90625,
+        "mean_radius": 0.03242098167538643,
+        "decision_linear_coverage": 0.98625,
+        "mean_decision_support": 0.020115861669182777
+      },
+      "audit_simultaneous_box": {
+        "coverage": 0.90625,
+        "mean_radius": 0.2272944301366806,
+        "decision_linear_coverage": 1.0,
+        "mean_decision_support": 0.044223859906196594
+      }
+    },
+    "trajectory": {
+      "coverage": 0.88,
+      "mean_max_standardized_score": 153.41641235351562,
+      "p90_max_standardized_score": 289.1281433105469,
+      "mean_coordinate_radius": 0.622687578201294,
+      "horizon": 10.0
+    },
+    "control": [
+      {
+        "method": "uncontrolled",
+        "mean": 0.6947951775116349,
+        "p90": 0.6947951775116349,
+        "mean_change_vs_nominal_percent": 19.84750704086289,
+        "p90_change_vs_nominal_percent": -35.37813165865717,
+        "mean_absolute_action": 0.0
+      },
+      {
+        "method": "nominal_mpc",
+        "mean": 0.5797326908725263,
+        "p90": 1.0751703646846265,
+        "mean_change_vs_nominal_percent": 0.0,
+        "p90_change_vs_nominal_percent": 0.0,
+        "mean_absolute_action": 1.2782501490709062
+      },
+      {
+        "method": "id_l2_robust_mpc",
+        "mean": 0.5723875722004768,
+        "p90": 1.025016024054124,
+        "mean_change_vs_nominal_percent": -1.266983695708931,
+        "p90_change_vs_nominal_percent": -4.664780789899654,
+        "mean_absolute_action": 1.1854451975785196
+      },
+      {
+        "method": "audit_l2_robust_mpc",
+        "mean": 0.5686035182243105,
+        "p90": 0.9914329398301072,
+        "mean_change_vs_nominal_percent": -1.9197076210185464,
+        "p90_change_vs_nominal_percent": -7.788293614201458,
+        "mean_absolute_action": 1.1152138462212557
+      },
+      {
+        "method": "adjoint_robust_mpc",
+        "mean": 0.5746503606894681,
+        "p90": 1.020090892334637,
+        "mean_change_vs_nominal_percent": -0.8766678614257721,
+        "p90_change_vs_nominal_percent": -5.122859981929058,
+        "mean_absolute_action": 1.2298369651970764
+      },
+      {
+        "method": "box_adjoint_robust_mpc",
+        "mean": 0.5687921745811221,
+        "p90": 0.9586055461371721,
+        "mean_change_vs_nominal_percent": -1.8871656650823379,
+        "p90_change_vs_nominal_percent": -10.841520783698838,
+        "mean_absolute_action": 1.1006832431109312
+      },
+      {
+        "method": "adversarial_robust_mpc",
+        "mean": 0.5763828048048324,
+        "p90": 1.0532395546931153,
+        "mean_change_vs_nominal_percent": -0.5778328737425841,
+        "p90_change_vs_nominal_percent": -2.039752090632078,
+        "mean_absolute_action": 1.2623403130836475
+      }
+    ]
+  },
+  "bounds": {
+    "device": "cuda",
+    "calibration_cases": 60,
+    "test_cases": 160,
+    "horizon": 20,
+    "gamma": 0.95,
+    "auxiliary_constants": {
+      "epsilon_global": 0.0627131924919203,
+      "q_l2": 6.692401811876467,
+      "q_ellipsoid": 16.993467821488334,
+      "lipschitz_global": 1.0,
+      "reward_lipschitz_global": 5.422115802764893,
+      "gamma": 0.95
+    },
+    "curvature_coefficient": 0.0,
+    "target_coverage": 0.9,
+    "table": [
+      {
+        "method": "Global max",
+        "method_key": "global",
+        "target_coverage": 0.9,
+        "coverage": 0.9375,
+        "mean_bound": 0.0987066784423616,
+        "median_utilization": 0.20997560659345532,
+        "p90_utilization": 0.6878530851562844,
+        "max_utilization": 3.9191907918010562,
+        "mean_value_gap": 0.034335990910888854,
+        "calibration_multiplier": 0.0025640660447826978
+      },
+      {
+        "method": "Local recursion",
+        "method_key": "local",
+        "target_coverage": 0.9,
+        "coverage": 0.94375,
+        "mean_bound": 0.08703526402082228,
+        "median_utilization": 0.32178814517744103,
+        "p90_utilization": 0.7875507005844723,
+        "max_utilization": 2.1898619351657143,
+        "mean_value_gap": 0.034335990910888854,
+        "calibration_multiplier": 0.011999066872534853
+      },
+      {
+        "method": "Adjoint support",
+        "method_key": "adjoint",
+        "target_coverage": 0.9,
+        "coverage": 0.925,
+        "mean_bound": 0.20345163000526592,
+        "median_utilization": 0.26492692025498343,
+        "p90_utilization": 0.8540020032703798,
+        "max_utilization": 1.7664575039740313,
+        "mean_value_gap": 0.034335990910888854,
+        "calibration_multiplier": 0.1259093366538991
+      },
+      {
+        "method": "Adjoint + curvature",
+        "method_key": "adjoint_curvature",
+        "target_coverage": 0.9,
+        "coverage": 0.925,
+        "mean_bound": 0.20345163000526592,
+        "median_utilization": 0.26492692025498343,
+        "p90_utilization": 0.8540020032703798,
+        "max_utilization": 1.7664575039740313,
+        "mean_value_gap": 0.034335990910888854,
+        "calibration_multiplier": 0.1259093366538991
+      }
+    ],
+    "interpretation": "All final value-bound multipliers were selected on calibration trajectories; the reported table uses independent test trajectories."
+  },
+  "ns2d": {
+    "device": "cuda",
+    "n_train": 800,
+    "n_validation": 50,
+    "n_audit": 200,
+    "n_test": 300,
+    "resolution": 128,
+    "label_noise": 0.05,
+    "smoothing_window": 15,
+    "floor": 0.005930875614285469,
+    "q90": 30.679018020629883,
+    "test_simultaneous_coverage": 0.8833333333333333,
+    "mean_l2_error": 0.16347213089466095,
+    "mean_full_band_width": 4.340887069702148,
+    "scale_error_pearson": 0.16947989537401537,
+    "scientific_scope": "2D function-valued uncertainty benchmark; no action channel and therefore no closed-loop control claim.",
+    "split_integrity": "Proper training, validation, conformal audit, and test indices are disjoint."
+  }
+}

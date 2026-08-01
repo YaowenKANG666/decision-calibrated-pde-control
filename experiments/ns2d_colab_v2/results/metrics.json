@@ -1,0 +1,18 @@
+{
+  "device": "cuda",
+  "n_train": 800,
+  "n_validation": 50,
+  "n_audit": 200,
+  "n_test": 300,
+  "resolution": 128,
+  "label_noise": 0.05,
+  "smoothing_window": 15,
+  "floor": 0.005930875614285469,
+  "q90": 30.679018020629883,
+  "test_simultaneous_coverage": 0.8833333333333333,
+  "mean_l2_error": 0.16347213089466095,
+  "mean_full_band_width": 4.340887069702148,
+  "scale_error_pearson": 0.16947989537401537,
+  "scientific_scope": "2D function-valued uncertainty benchmark; no action channel and therefore no closed-loop control claim.",
+  "split_integrity": "Proper training, validation, conformal audit, and test indices are disjoint."
+}

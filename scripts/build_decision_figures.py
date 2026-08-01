@@ -10,7 +10,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 COLORS = {
     "id_l2": "#A7B8C8",
     "audit_l2": "#77A6C5",
@@ -108,6 +107,8 @@ def control_tail(payload: dict, output: Path) -> None:
     )
     axis.axhline(0.0, color="#555555", lw=1.0)
     for bar, value in zip(bars, change):
+        if abs(value) < 1e-12:
+            continue
         axis.annotate(
             f"{value:+.2f}%",
             (bar.get_x() + bar.get_width() / 2.0, value),
