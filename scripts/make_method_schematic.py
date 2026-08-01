@@ -1,4 +1,17 @@
-"""Draw the compact uncertainty-to-control schematic used in the paper."""
+"""Draw the closed-loop uncertainty-to-control schematic used in the paper.
+
+Figure contract
+---------------
+Core conclusion: calibrated predictive uncertainty becomes operational only
+when the learned set is repeatedly queried inside a receding-horizon feedback
+loop with the physical PDE plant.
+Archetype: schematic-led method figure.
+Backend: Python/matplotlib only.
+Export: editable SVG/PDF plus a 400-dpi PNG preview (and optional TIFF).
+Reviewer risk: one-step conformal calibration must not be depicted as a
+closed-loop safety guarantee; offline transfers are therefore dashed and the
+online feedback loop is solid.
+"""
 
 from __future__ import annotations
 
@@ -8,10 +21,11 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Circle, Ellipse, FancyArrowPatch, FancyBboxPatch, Rectangle
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 INK = "#243447"
-MUTED = "#718096"
+MUTED = "#6E7F91"
+LINE = "#8796A7"
 BLUE = "#315F8C"
 BLUE_LIGHT = "#EAF1F8"
 TEAL = "#2F7E79"
@@ -20,48 +34,98 @@ GOLD = "#B8792A"
 GOLD_LIGHT = "#FAF1E3"
 VIOLET = "#71558B"
 VIOLET_LIGHT = "#F0EBF5"
+PLANT = "#3E5268"
+PLANT_LIGHT = "#EDF1F4"
 
 
-def arrow(axis, x0: float, x1: float, y: float = 0.50, color: str = MUTED) -> None:
+def rounded_box(
+    axis,
+    xy: tuple[float, float],
+    width: float,
+    height: float,
+    face: str,
+    edge: str,
+    title: str,
+    symbol: str,
+    equation: str,
+    *,
+    title_size: float = 7.1,
+) -> None:
+    x0, y0 = xy
+    axis.add_patch(
+        FancyBboxPatch(
+            (x0, y0),
+            width,
+            height,
+            boxstyle="round,pad=0.009,rounding_size=0.018",
+            linewidth=0.95,
+            edgecolor=edge,
+            facecolor=face,
+        )
+    )
+    axis.text(
+        x0 + width / 2,
+        y0 + 0.72 * height,
+        title,
+        ha="center",
+        va="center",
+        fontsize=title_size,
+        fontweight="bold",
+        color=edge,
+    )
+    axis.text(
+        x0 + width / 2,
+        y0 + 0.43 * height,
+        symbol,
+        ha="center",
+        va="center",
+        fontsize=7.2,
+        color=INK,
+    )
+    axis.text(
+        x0 + width / 2,
+        y0 + 0.16 * height,
+        equation,
+        ha="center",
+        va="center",
+        fontsize=5.9,
+        color=MUTED,
+    )
+
+
+def straight_arrow(
+    axis,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    color: str = LINE,
+    dashed: bool = False,
+    width: float = 1.05,
+    label: str | None = None,
+    label_xy: tuple[float, float] | None = None,
+) -> None:
     axis.add_patch(
         FancyArrowPatch(
-            (x0, y),
-            (x1, y),
+            start,
+            end,
             arrowstyle="-|>",
-            mutation_scale=9,
-            linewidth=1.05,
+            mutation_scale=8.5,
+            linewidth=width,
+            linestyle=(0, (3, 2)) if dashed else "solid",
             color=color,
             shrinkA=1,
             shrinkB=1,
         )
     )
-
-
-def card(axis, center: float, face: str, edge: str, title: str, symbol: str):
-    width, y0, height = 0.155, 0.21, 0.61
-    x0 = center - width / 2
-    patch = FancyBboxPatch(
-        (x0, y0),
-        width,
-        height,
-        boxstyle="round,pad=0.010,rounding_size=0.022",
-        linewidth=0.9,
-        edgecolor=edge,
-        facecolor=face,
-    )
-    axis.add_patch(patch)
-    axis.text(
-        center,
-        0.745,
-        title,
-        ha="center",
-        va="center",
-        fontsize=7.4,
-        fontweight="bold",
-        color=edge,
-    )
-    axis.text(center, 0.275, symbol, ha="center", va="center", fontsize=7.2, color=INK)
-    return x0, width
+    if label and label_xy:
+        axis.text(
+            *label_xy,
+            label,
+            ha="center",
+            va="center",
+            fontsize=5.9,
+            color=color,
+        )
 
 
 def draw(output_stem: Path, write_tiff: bool = False) -> None:
@@ -75,126 +139,133 @@ def draw(output_stem: Path, write_tiff: bool = False) -> None:
         }
     )
 
-    figure, axis = plt.subplots(figsize=(7.2, 2.15), constrained_layout=True)
+    figure, axis = plt.subplots(figsize=(7.2, 3.15), constrained_layout=True)
     axis.set_xlim(0, 1)
     axis.set_ylim(0, 1)
     axis.axis("off")
 
-    centers = [0.095, 0.292, 0.489, 0.686, 0.895]
-    cards = [
-        card(axis, centers[0], BLUE_LIGHT, BLUE, "Twin FNOs", r"$\widehat G,\,\widetilde G$"),
-        card(axis, centers[1], BLUE_LIGHT, BLUE, "Disagreement", r"$\sigma(x,a)$"),
-        card(axis, centers[2], GOLD_LIGHT, GOLD, "Split conformal", r"$q_{1-\alpha}$"),
-        card(axis, centers[3], TEAL_LIGHT, TEAL, "Field set", r"$\mathcal{U}(x,a)$"),
-        card(axis, centers[4], VIOLET_LIGHT, VIOLET, "Robust MPC", r"$a_t^*$"),
-    ]
-
-    for (_, width), (next_x, _) in zip(cards[:-1], cards[1:]):
-        current_x = next_x - (centers[1] - centers[0]) + width
-        arrow(axis, current_x + 0.012, next_x - 0.012)
-
-    # Twin-operator icon: identical inputs, clean and perturbed output traces.
-    x = np.linspace(centers[0] - 0.052, centers[0] + 0.052, 80)
-    phase = (x - x.min()) / (x.max() - x.min())
-    axis.plot(x, 0.575 + 0.025 * np.sin(2.3 * np.pi * phase), color=BLUE, lw=1.35)
-    axis.plot(
-        x,
-        0.505 + 0.025 * np.sin(2.3 * np.pi * phase + 0.22),
+    # Phase labels make the guarantee boundary explicit.
+    axis.text(
+        0.018,
+        0.953,
+        "OFFLINE  learn + audit-calibrate",
+        fontsize=6.4,
+        fontweight="bold",
         color=BLUE,
-        lw=1.15,
-        ls="--",
     )
-    axis.add_patch(
-        Rectangle(
-            (centers[0] - 0.058, 0.475),
-            0.116,
-            0.13,
-            fill=False,
-            ec=BLUE,
-            lw=0.65,
-        )
+    axis.plot([0.018, 0.982], [0.925, 0.925], color="#D8E0E8", lw=0.8)
+    axis.text(
+        0.018,
+        0.522,
+        "ONLINE  receding-horizon feedback",
+        fontsize=6.4,
+        fontweight="bold",
+        color=VIOLET,
     )
 
-    # Disagreement icon: a localized, spatially varying scale.
-    x = np.linspace(centers[1] - 0.055, centers[1] + 0.055, 120)
-    z = (x - x.min()) / (x.max() - x.min())
-    scale = 0.013 + 0.045 * np.exp(-((z - 0.64) / 0.22) ** 2)
-    axis.fill_between(x, 0.535 - scale, 0.535 + scale, color=TEAL, alpha=0.24, lw=0)
-    axis.plot(x, 0.535 + 0.012 * np.sin(3 * np.pi * z), color=TEAL, lw=1.2)
-
-    # Conformal icon: empirical scores and the selected finite-sample order statistic.
-    score_x = centers[2] + np.linspace(-0.052, 0.052, 8)
-    score_y = np.array([0.485, 0.497, 0.512, 0.526, 0.545, 0.566, 0.585, 0.628])
-    axis.scatter(score_x, score_y, s=8, facecolor="white", edgecolor=GOLD, linewidth=0.8, zorder=3)
-    axis.plot([centers[2] - 0.061, centers[2] + 0.061], [0.587, 0.587], color=GOLD, lw=1.15)
-
-    # Function-space geometry icon: anisotropic set and decision direction.
-    axis.add_patch(Ellipse((centers[3], 0.54), 0.104, 0.073, angle=18, fc="white", ec=TEAL, lw=1.1))
-    axis.add_patch(
-        Ellipse(
-            (centers[3], 0.54),
-            0.052,
-            0.036,
-            angle=18,
-            fill=False,
-            ec=TEAL,
-            lw=0.65,
-            ls="--",
-        )
+    # Offline row: proper training and audit calibration have distinct data roles.
+    rounded_box(axis, (0.025, 0.625), 0.155, 0.235, BLUE_LIGHT, BLUE,
+                "Data split", r"$D_{\rm tr},D_{\rm val},D_{\rm cal}$", "Sec. 2.3")
+    rounded_box(
+        axis,
+        (0.225, 0.625),
+        0.175,
+        0.235,
+        BLUE_LIGHT,
+        BLUE,
+        "Twin FNOs",
+        r"$\widehat G_\theta,\widetilde G_{\widetilde\theta}$",
+        "Eqs. (14)--(16)",
     )
+    rounded_box(axis, (0.445, 0.625), 0.160, 0.235, TEAL_LIGHT, TEAL,
+                "Spatial scale", r"$\sigma_\theta(u,a)$", "Eqs. (17)--(19)")
+    rounded_box(axis, (0.650, 0.625), 0.165, 0.235, GOLD_LIGHT, GOLD,
+                "Split conformal", r"$q_g$ at $1-\alpha$", "Eqs. (12), (20)--(22)")
+    rounded_box(axis, (0.860, 0.625), 0.115, 0.235, PLANT_LIGHT, PLANT,
+                "Freeze", r"$\widehat G,\sigma,q_g$", "deploy", title_size=6.8)
+
+    straight_arrow(axis, (0.182, 0.742), (0.222, 0.742), color=BLUE)
+    straight_arrow(axis, (0.402, 0.742), (0.442, 0.742), color=TEAL)
+    straight_arrow(axis, (0.607, 0.742), (0.647, 0.742), color=GOLD)
+    straight_arrow(axis, (0.817, 0.742), (0.857, 0.742), color=PLANT)
+    axis.text(0.300, 0.590, "proper-training labels", ha="center", fontsize=5.6, color=BLUE)
+    axis.text(0.728, 0.590, "held-out audit labels", ha="center", fontsize=5.6, color=GOLD)
+
+    # Online row.  The model/set and controller interact while the selected
+    # action is applied only to the physical PDE plant.
+    state_x, state_y = 0.043, 0.205
+    axis.text(
+        state_x,
+        state_y + 0.095,
+        r"observed field $u_t$",
+        ha="center",
+        fontsize=6.2,
+        color=INK,
+    )
+    wave_x = np.linspace(0.012, 0.080, 100)
+    phase = (wave_x - wave_x.min()) / (wave_x.max() - wave_x.min())
+    axis.plot(wave_x, state_y + 0.020 + 0.025 * np.sin(2.2 * np.pi * phase), color=INK, lw=1.2)
+
+    rounded_box(axis, (0.125, 0.125), 0.220, 0.285, TEAL_LIGHT, TEAL,
+                "Calibrated dynamics set", r"$\mathcal{U}_g(u_t,a)$", "Eqs. (23)--(26)")
+    rounded_box(axis, (0.445, 0.125), 0.180, 0.285, VIOLET_LIGHT, VIOLET,
+                "Robust MPC", r"$a_t^*=\arg\min_a\max_\Delta J$", "Eq. (27)")
+    rounded_box(axis, (0.740, 0.125), 0.205, 0.285, PLANT_LIGHT, PLANT,
+                "Physical PDE plant", r"$u_{t+1}=G_B^{\Delta T}(u_t,a_t^*;\xi)$", "Eqs. (1), (3)")
+
+    straight_arrow(axis, (0.080, 0.267), (0.122, 0.267), color=INK)
+    straight_arrow(
+        axis, (0.347, 0.310), (0.442, 0.310), color=TEAL,
+        label="worst-case next fields", label_xy=(0.394, 0.340),
+    )
+    straight_arrow(
+        axis, (0.442, 0.222), (0.347, 0.222), color=VIOLET,
+        label=r"queries $(u,a)$", label_xy=(0.394, 0.191),
+    )
+    straight_arrow(
+        axis, (0.627, 0.267), (0.737, 0.267), color=VIOLET, width=1.3,
+        label=r"apply $a_t^*$", label_xy=(0.682, 0.303),
+    )
+
+    # Dashed arrows transfer frozen learned/calibrated objects to deployment.
+    straight_arrow(axis, (0.905, 0.622), (0.330, 0.414), color=MUTED, dashed=True, width=0.9)
+    axis.text(
+        0.635,
+        0.491,
+        "frozen model, scale and quantile",
+        ha="center",
+        fontsize=5.6,
+        color=MUTED,
+    )
+
+    # A long return arrow makes the physical feedback loop unambiguous.
     axis.add_patch(
         FancyArrowPatch(
-            (centers[3] - 0.006, 0.536),
-            (centers[3] + 0.058, 0.596),
+            (0.842, 0.121),
+            (0.047, 0.188),
+            connectionstyle="arc3,rad=-0.10",
             arrowstyle="-|>",
-            mutation_scale=7,
+            mutation_scale=9.5,
+            linewidth=1.35,
             color=INK,
-            lw=0.9,
         )
     )
-
-    # Closed-loop icon: controller and deployed PDE linked in feedback.
-    left, right, y = centers[4] - 0.037, centers[4] + 0.037, 0.54
-    axis.add_patch(Circle((left, y), 0.026, fc="white", ec=VIOLET, lw=1.0))
-    axis.add_patch(Circle((right, y), 0.026, fc="white", ec=INK, lw=1.0))
-    axis.text(left, y, "M", ha="center", va="center", fontsize=6.2, fontweight="bold", color=VIOLET)
-    axis.text(right, y, "P", ha="center", va="center", fontsize=6.2, fontweight="bold", color=INK)
-    axis.add_patch(
-        FancyArrowPatch(
-            (left + 0.025, y + 0.012),
-            (right - 0.025, y + 0.012),
-            arrowstyle="-|>",
-            mutation_scale=6,
-            color=VIOLET,
-            lw=0.9,
-        )
+    axis.text(
+        0.492,
+        0.035,
+        r"measure $u_{t+1}$, shift horizon, and repeat",
+        ha="center",
+        fontsize=6.1,
+        color=INK,
     )
-    axis.add_patch(
-        FancyArrowPatch(
-            (right - 0.025, y - 0.015),
-            (left + 0.025, y - 0.015),
-            arrowstyle="-|>",
-            mutation_scale=6,
-            color=INK,
-            lw=0.9,
-        )
-    )
-
-    # Three data roles, shown once rather than repeated inside every stage.
-    axis.text(0.194, 0.91, "proper training", ha="center", va="center", fontsize=6.4, color=BLUE)
-    axis.plot([0.035, 0.353], [0.875, 0.875], color=BLUE, lw=1.2)
-    axis.text(0.588, 0.91, "deployment audit", ha="center", va="center", fontsize=6.4, color=GOLD)
-    axis.plot([0.429, 0.747], [0.875, 0.875], color=GOLD, lw=1.2)
-    axis.text(0.895, 0.91, "closed loop", ha="center", va="center", fontsize=6.4, color=VIOLET)
-    axis.plot([0.818, 0.972], [0.875, 0.875], color=VIOLET, lw=1.2)
 
     axis.text(
-        0.5,
-        0.085,
-        "predictive sensitivity  →  calibrated dynamics geometry  →  objective-aware action",
-        ha="center",
+        0.982,
+        0.505,
+        "dashed: offline transfer   |   solid: online feedback",
+        ha="right",
         va="center",
-        fontsize=6.7,
+        fontsize=5.5,
         color=MUTED,
     )
 

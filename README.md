@@ -11,6 +11,12 @@ and from that set to robust model predictive control (MPC).
 
 ![Method overview](figures/method_01_chain_schematic.png)
 
+The diagram separates offline estimation/calibration (dashed transfer) from
+the online receding-horizon feedback loop (solid arrows). At deployment, MPC
+queries the calibrated one-step dynamics set, applies only the selected action
+to the physical PDE, observes the next field, and replans. One-step marginal
+coverage is therefore not depicted as a closed-loop safety certificate.
+
 ## Method
 
 For a state field $u_t$, action $a_t$, and observed physical parameters
@@ -31,7 +37,7 @@ $$
 \mathcal U_2(u,a)
 =\left\lbrace
 \widehat G_\theta(u,a)+\Delta:
-\left\lVert\Delta\oslash\sigma_\theta(u,a)\right\rVert_{2,n}\le q_2
+\left\lVert\Delta\odot\sigma_\theta(u,a)^{-1}\right\rVert_{2,n}\le q_2
 \right\rbrace,
 $$
 
@@ -80,6 +86,13 @@ error, and one-step conformal coverage does not certify the resulting rollout.
 The public Navier--Stokes pairs contain no action channel. They test
 function-valued uncertainty calibration, not two-dimensional closed-loop
 control.
+
+In the Burgers benchmark, the Gaussian actuator center (`0.68`) and width
+(`0.12`) are fixed simulator-design constants, not estimated parameters. The
+endpoint entries are zeroed on the numerical grid and the interior profile is
+renormalized to unit peak. The reported deployment shift varies the latent
+actuator gain; uncertainty in actuator location or width is outside the scope
+of the present calibration experiment.
 
 ## Repository layout
 
