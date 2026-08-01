@@ -137,6 +137,15 @@ dependency:
 python -m pip install -e ".[dev,ns2d]"
 ```
 
+## Data provenance
+
+Controlled-Burgers data are generated on demand by the simulator in this
+repository; no external Burgers dataset is used. The NS2D experiment reuses
+the NeuralOperator Team Reynolds-500 dataset, specifically
+`nsforcing_128.tgz`, from [Zenodo record
+12825163](https://doi.org/10.5281/zenodo.12825163). The external archive is not
+redistributed by this repository.
+
 ## Reproduce the experiments
 
 A CPU-compatible smoke test is:

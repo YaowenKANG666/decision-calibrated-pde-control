@@ -16,3 +16,6 @@ robust-control construction, theoretical guarantees, and ablation studies.
 The framing and derivations are supported by 37 source-matched references
 across operator learning, uncertainty quantification, conformal prediction,
 and robust decisions and control.
+Its Data Availability statement distinguishes study-generated Burgers samples
+from the reused NeuralOperator Reynolds-500 archive and cites the exact Zenodo
+record and `nsforcing_128.tgz` file.
