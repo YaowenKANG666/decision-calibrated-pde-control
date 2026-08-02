@@ -38,37 +38,37 @@ finite optimization budget and is not globally exact.
 
 ## Method in one page
 
-For a field state \(u\), action \(a\), and observed parameters \(\xi\), the
+For a field state $u$, action $a$, and observed parameters $\xi$, the
 residual FNO predicts
 
-$$
+```math
 \widehat G_\theta(u,a;\xi)=u+\delta_\theta(u,a;\xi).
-$$
+```
 
 A perturbed-label replica gives a plug-in spatial scale
 
-$$
+```math
 \sigma_\theta(z)=\operatorname{Smooth}
 \left(|\widehat G_\theta(z)-\widetilde G_{\widetilde\theta}(z)|\right)+\tau_0.
-$$
+```
 
 Split conformal calibration on a disjoint target-domain audit set constructs
 
-$$
+```math
 \mathcal U_g(u,a)=\left\{
 \widehat G_\theta(u,a)+\Delta:
 \left\|\Delta\odot\sigma_\theta(u,a)^{-1}\right\|_{g,n}\le q_g
 \right\},
 \qquad g\in\{2,\infty\}.
-$$
+```
 
 For the normalized field inner product, the exact local support functions are
 
-$$
+```math
 h_{\mathcal U_2}(\lambda)=q_2\|\lambda\odot\sigma\|_{2,n},
 \qquad
 h_{\mathcal U_\infty}(\lambda)=q_\infty\|\lambda\odot\sigma\|_{1,n}.
-$$
+```
 
 These terms weight uncertainty by finite-horizon adjoint sensitivity. The
 ellipsoid and box may have matched field-level coverage while producing
@@ -78,10 +78,10 @@ different support, actions, and closed-loop tail cost.
 
 The controlled plant is
 
-$$
+```math
 u_t+u u_x=\nu u_{xx}+f_{\mathrm{ext}}(x,t)
 +g_{\mathrm{act}}\sum_{k=1}^{2}a_{t,k}b_k(x).
-$$
+```
 
 Persistent forcing prevents zero control from winning through passive viscous
 decay. Two localized actuators make the action spatially structured. The
@@ -126,24 +126,21 @@ The final comparison will contain:
 
 - five independent FNO training seeds;
 - 100–200 independent joint-shift trajectories per seed;
-- uncontrolled, PDE-oracle, nominal, audit-\(L^2\), ellipsoid-adjoint, and
+- uncontrolled, PDE-oracle, nominal, audit-$L^2$, ellipsoid-adjoint, and
   box-adjoint controllers;
 - source calibration versus target audit calibration;
-- audit sizes \(20,50,100,200,300\), with repeated audit subsampling;
+- audit sizes $20,50,100,200,300$, with repeated audit subsampling;
 - constant, twin-FNO, ensemble, and residual-quantile scale ablations;
 - paired mean, median, p90, control-effort, coverage, width, and adjoint-support
   statistics.
 
 The main empirical claim will be tested only after these runs:
 
-$$
-\boxed{
-\begin{gathered}
-\text{At matched field-level coverage, ambiguity-set geometry changes}\\
-\text{adjoint support, robust actions, and upper-tail closed-loop cost.}
-\end{gathered}
-}
-$$
+```math
+\text{matched field-level coverage}
+\quad\Longrightarrow\quad
+\text{geometry changes support, actions, and upper-tail cost}.
+```
 
 ## Repository layout
 
