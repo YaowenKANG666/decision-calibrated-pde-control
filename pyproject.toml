@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "decision-calibrated-robust-control"
 version = "0.1.0"
-description = "Decision-calibrated dynamics ambiguity sets for robust control under shift."
+description = "Decision-effective conformal ambiguity sets for neural PDE control."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -18,13 +18,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
-ns2d = ["neuraloperator>=1.0.2"]
 
 [project.scripts]
-dcurc-experiment = "unoc.experiment:main"
-dcurc-value-gap = "unoc.value_gap:main"
-dcurc-bound-comparison = "unoc.bound_comparison:main"
-dcurc-ns2d = "unoc.ns2d_experiment:main"
 dcurc-forced-oracle = "unoc.forced_control:main"
 
 [tool.setuptools.packages.find]

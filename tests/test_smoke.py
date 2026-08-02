@@ -17,13 +17,7 @@ from unoc.forced_control import (
     oracle_cem_action,
 )
 from unoc.models import PerturbationScaleWorldModel, build_model
-from unoc.mpc import _sequence_cost
 from unoc.pde import BurgersConfig, BurgersSolver
-from unoc.value_gap import (
-    finite_horizon_value_bound,
-    fixed_policy_infinite_bound,
-    simulate_sharpness_witness,
-)
 
 
 def test_conformal_quantile_uses_infinity_when_sample_is_too_small() -> None:
@@ -198,34 +192,6 @@ def test_rollout_recursion_matches_geometric_bound() -> None:
     assert abs(error - closed_form) < 1e-12
 
 
-def test_value_gap_witness_attains_infinite_horizon_bound() -> None:
-    epsilon, gamma, lipschitz, reward_lipschitz = 0.01, 0.95, 1.0, 1.3
-    exact = fixed_policy_infinite_bound(
-        epsilon, gamma, reward_lipschitz, lipschitz
-    )
-    simulated = simulate_sharpness_witness(
-        epsilon,
-        gamma,
-        lipschitz,
-        reward_lipschitz,
-        horizon=5000,
-    )
-    assert abs(simulated - exact) / exact < 1e-10
-
-
-def test_finite_value_bound_converges_to_squared_discount_rate() -> None:
-    epsilon, gamma, reward_lipschitz = 0.02, 0.9, 0.7
-    finite = finite_horizon_value_bound(
-        epsilon,
-        gamma,
-        reward_lipschitz,
-        dynamics_lipschitz=1.0,
-        horizon=1000,
-    )
-    exact = gamma * reward_lipschitz * epsilon / (1.0 - gamma) ** 2
-    assert abs(finite - exact) / exact < 1e-10
-
-
 def test_trajectory_calibration_covers_exact_behavior_rollouts() -> None:
     class LinearWorldModel(torch.nn.Module):
         def forward(self, state, action, viscosity, boundary):
@@ -266,44 +232,3 @@ def test_autograd_conversion_matches_normalized_cost_gradient() -> None:
         2.0 * weight * state,
         atol=1e-7,
     )
-
-
-def test_adversarial_rollout_cost_dominates_nominal_cost() -> None:
-    class LinearWorldModel(torch.nn.Module):
-        def forward(self, state, action, viscosity, boundary):
-            mean = 0.9 * state + 0.1 * action[:, None]
-            scale = torch.full_like(mean, 0.08)
-            return mean, scale
-
-    model = LinearWorldModel()
-    calibrator = OperatorCalibrator(
-        multiplier=1.2,
-        coverage=0.9,
-        lipschitz=1.0,
-        norm_kind="ellipsoid",
-    )
-    state = torch.tensor([0.2, -0.1, 0.3, -0.2])
-    sequences = torch.tensor([[0.5, -0.2], [-0.4, 0.1]])
-    nominal = _sequence_cost(
-        model,
-        calibrator,
-        state,
-        sequences,
-        0.02,
-        (0.0, 0.0),
-        False,
-        0.002,
-    )
-    adversarial = _sequence_cost(
-        model,
-        calibrator,
-        state,
-        sequences,
-        0.02,
-        (0.0, 0.0),
-        True,
-        0.002,
-        adversarial=True,
-        adversary_iterations=4,
-    )
-    assert torch.all(adversarial >= nominal)

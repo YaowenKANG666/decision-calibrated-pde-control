@@ -18,8 +18,6 @@ class CEMConfig:
     iterations: int = 4
     action_limit: float = 2.0
     control_weight: float = 0.002
-    adversary_iterations: int = 3
-    adversary_step_size: float = 0.8
 
 
 def _decision_norm(value: torch.Tensor) -> torch.Tensor:
@@ -37,23 +35,8 @@ def _sequence_cost(
     boundary: tuple[float, float],
     robust: bool,
     control_weight: float,
-    adversarial: bool = False,
-    adversary_iterations: int = 3,
-    adversary_step_size: float = 0.8,
 ) -> torch.Tensor:
     if robust and calibrator.norm_kind in {"ellipsoid", "max"}:
-        if adversarial:
-            return _adversarial_robust_sequence_cost(
-                model,
-                calibrator,
-                initial_state,
-                sequences,
-                viscosity,
-                boundary,
-                control_weight,
-                adversary_iterations,
-                adversary_step_size,
-            )
         return _adjoint_robust_sequence_cost(
             model,
             calibrator,
@@ -153,100 +136,6 @@ def _adjoint_robust_sequence_cost(
     return (nominal.detach() + robust_support).detach()
 
 
-def _perturbed_rollout_cost(
-    model: torch.nn.Module,
-    initial_state: torch.Tensor,
-    sequences: torch.Tensor,
-    perturbations: torch.Tensor,
-    viscosity: float,
-    boundary: tuple[float, float],
-    control_weight: float,
-) -> torch.Tensor:
-    count, horizon = sequences.shape
-    state = initial_state[None, :].expand(count, -1)
-    nu = torch.full((count,), viscosity, dtype=state.dtype, device=state.device)
-    bc = torch.tensor(boundary, dtype=state.dtype, device=state.device)[None, :].expand(count, -1)
-    total = torch.zeros(count, dtype=state.dtype, device=state.device)
-    for step in range(horizon):
-        action = sequences[:, step]
-        mean, scale = model(state, action, nu, bc)
-        state = mean + scale * perturbations[:, step]
-        total = total + _decision_norm(state).square()
-        total = total + control_weight * action.square()
-    return total
-
-
-def _adversarial_robust_sequence_cost(
-    model: torch.nn.Module,
-    calibrator: OperatorCalibrator,
-    initial_state: torch.Tensor,
-    sequences: torch.Tensor,
-    viscosity: float,
-    boundary: tuple[float, float],
-    control_weight: float,
-    iterations: int,
-    step_size: float,
-) -> torch.Tensor:
-    """Return a feasible PGD lower-bound estimate of the nonlinear inner maximum.
-
-    The autoregressive FNO rollout gives a high-dimensional nonconvex objective.
-    Finite-step, single-start ascent does not certify a global maximum or an
-    optimality gap.
-    """
-
-    count, horizon = sequences.shape
-    grid = initial_state.shape[0]
-    perturbations = torch.zeros(
-        count,
-        horizon,
-        grid,
-        dtype=initial_state.dtype,
-        device=initial_state.device,
-        requires_grad=True,
-    )
-    for _ in range(iterations):
-        cost = _perturbed_rollout_cost(
-            model,
-            initial_state,
-            sequences,
-            perturbations,
-            viscosity,
-            boundary,
-            control_weight,
-        )
-        gradient = torch.autograd.grad(cost.sum(), perturbations)[0]
-        with torch.no_grad():
-            if calibrator.norm_kind == "max":
-                perturbations = perturbations + step_size * gradient.sign()
-                perturbations = perturbations.clamp(
-                    -calibrator.multiplier,
-                    calibrator.multiplier,
-                )
-            else:
-                gradient_norm = torch.sqrt(
-                    torch.mean(gradient.square(), dim=2, keepdim=True)
-                ).clamp_min(1e-8)
-                perturbations = perturbations + step_size * gradient / gradient_norm
-                norm = torch.sqrt(
-                    torch.mean(perturbations.square(), dim=2, keepdim=True)
-                ).clamp_min(1e-8)
-                perturbations = perturbations * torch.clamp(
-                    calibrator.multiplier / norm,
-                    max=1.0,
-                )
-        perturbations = perturbations.detach().requires_grad_(True)
-    with torch.no_grad():
-        return _perturbed_rollout_cost(
-            model,
-            initial_state,
-            sequences,
-            perturbations.detach(),
-            viscosity,
-            boundary,
-            control_weight,
-        )
-
-
 def cem_action(
     model: torch.nn.Module,
     calibrator: OperatorCalibrator,
@@ -257,7 +146,6 @@ def cem_action(
     device: torch.device,
     robust: bool,
     seed: int,
-    adversarial: bool = False,
 ) -> float:
     """Return the first action from a CEM-optimized open-loop sequence."""
 
@@ -287,9 +175,6 @@ def cem_action(
             boundary,
             robust,
             config.control_weight,
-            adversarial,
-            config.adversary_iterations,
-            config.adversary_step_size,
         )
         elite = sequences[torch.topk(costs, config.elites, largest=False).indices]
         mean = elite.mean(dim=0)

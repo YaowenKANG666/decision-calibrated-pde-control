@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If this research prototype is useful, please cite the software and accompanying preprint."
-title: "From Predictive Coverage to Robust PDE Control: Calibrated Dynamics Ambiguity Sets for Neural Operators"
+title: "Decision-Effective Conformal Ambiguity Sets for Neural PDE Control"
 type: software
 authors:
   - family-names: Kang
@@ -9,6 +9,6 @@ version: 0.1.0
 date-released: 2026-07-31
 license: MIT
 abstract: >-
-  A notebook-first research prototype for converting predictive uncertainty
-  in function-valued world models into conformal dynamics ambiguity sets and
-  robust planning objectives under deployment shift.
+  An offline-calibrated, online-applied framework for converting field-valued
+  neural-operator uncertainty into dynamics ambiguity sets queried by robust
+  model predictive control.
